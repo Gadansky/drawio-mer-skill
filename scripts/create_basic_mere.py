@@ -116,6 +116,7 @@ def add_edge(
     value: str,
     source: str,
     target: str,
+    points: list[tuple[float, float]] | None = None,
 ) -> None:
     cell = ET.SubElement(
         root,
@@ -130,7 +131,11 @@ def add_edge(
             "target": target,
         },
     )
-    ET.SubElement(cell, "mxGeometry", {"relative": "1", "as": "geometry"})
+    geometry = ET.SubElement(cell, "mxGeometry", {"relative": "1", "as": "geometry"})
+    if points:
+        array = ET.SubElement(geometry, "Array", {"as": "points"})
+        for x, y in points:
+            ET.SubElement(array, "mxPoint", {"x": str(x), "y": str(y)})
 
 
 def build_diagram() -> ET.ElementTree:
@@ -170,7 +175,7 @@ def build_diagram() -> ET.ElementTree:
 
     add_zone_label(root, "zone_comercial", "Zona comercial", 80, 40)
     add_zone_label(root, "zone_catalogo", "Zona catalogo", 1320, 40)
-    add_zone_label(root, "zone_detalle", "Zona detalle / asociativa", 760, 640)
+    add_zone_label(root, "zone_detalle", "Zona detalle / asociativa", 500, 680)
 
     add_entity(
         root,
@@ -232,12 +237,54 @@ def build_diagram() -> ET.ElementTree:
     add_relationship(root, "rel_contiene", "contiene", 700, 470)
     add_relationship(root, "rel_referencia", "referencia", 1190, 470)
 
-    add_edge(root, "edge_cliente_realiza", "1", "entity_cliente", "rel_realiza")
-    add_edge(root, "edge_realiza_pedido", "0..N", "rel_realiza", "entity_pedido")
-    add_edge(root, "edge_pedido_contiene", "1", "entity_pedido", "rel_contiene")
-    add_edge(root, "edge_contiene_detalle", "1..N", "rel_contiene", "entity_detalle_pedido")
-    add_edge(root, "edge_detalle_referencia", "0..N", "entity_detalle_pedido", "rel_referencia")
-    add_edge(root, "edge_referencia_producto", "1", "rel_referencia", "entity_producto")
+    add_edge(
+        root,
+        "edge_cliente_realiza",
+        "1",
+        "entity_cliente",
+        "rel_realiza",
+        points=[(350, 197.5), (350, 195)],
+    )
+    add_edge(
+        root,
+        "edge_realiza_pedido",
+        "0..N",
+        "rel_realiza",
+        "entity_pedido",
+        points=[(590, 195), (590, 197.5)],
+    )
+    add_edge(
+        root,
+        "edge_pedido_contiene",
+        "1",
+        "entity_pedido",
+        "rel_contiene",
+        points=[(760, 360)],
+    )
+    add_edge(
+        root,
+        "edge_contiene_detalle",
+        "1..N",
+        "rel_contiene",
+        "entity_detalle_pedido",
+        points=[(760, 620), (920, 620)],
+    )
+    add_edge(
+        root,
+        "edge_detalle_referencia",
+        "0..N",
+        "entity_detalle_pedido",
+        "rel_referencia",
+        points=[(920, 620), (1250, 620)],
+    )
+    add_edge(
+        root,
+        "edge_referencia_producto",
+        "1",
+        "rel_referencia",
+        "entity_producto",
+        points=[(1250, 350), (1430, 350)],
+    )
 
     return ET.ElementTree(mxfile)
 

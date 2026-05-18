@@ -61,6 +61,10 @@ class BoundingBox:
     def bottom(self) -> float:
         return self.y + self.height
 
+    @property
+    def center(self) -> tuple[float, float]:
+        return (self.x + self.width / 2, self.y + self.height / 2)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -152,6 +156,10 @@ def ignores_layout_overlap(cell: ET.Element) -> bool:
     return "ignorelayoutoverlap=1" in cell_style(cell)
 
 
+def ignores_route_crossing(cell: ET.Element) -> bool:
+    return "ignoreroutecrossing=1" in cell_style(cell)
+
+
 def has_internal_attribute_list(cell: ET.Element) -> bool:
     value = raw_value(cell).lower()
     if "<br" in value or "<hr" in value:
@@ -213,7 +221,7 @@ def collect_layout_warnings(
 ) -> tuple[list[str], dict[str, object]]:
     warnings: list[str] = []
     vertex_cells = [cell for cell in cells if cell.get("vertex") == "1"]
-    cell_by_id = {cell.get("id", ""): cell for cell in vertex_cells if cell.get("id")}
+    cell_by_id = {cell.get("id", ""): cell for cell in cells if cell.get("id")}
     boxes: list[BoundingBox] = []
     missing_geometry: list[str] = []
 
@@ -262,6 +270,11 @@ def collect_layout_warnings(
     for left_id, right_id in overlaps:
         warnings.append(f"Visual overlap detected: {left_id} overlaps {right_id}")
 
+    boxes_by_id = {box.cell_id: box for box in boxes}
+    route_crossings = collect_edge_route_crossings(cells, boxes_by_id)
+    for edge_id, crossed_id in route_crossings:
+        warnings.append(f"Edge route crosses node: {edge_id} crosses {crossed_id}")
+
     max_right = max((box.right for box in boxes), default=0.0)
     max_bottom = max((box.bottom for box in boxes), default=0.0)
     page_width = max((parse_float(model.get("pageWidth")) or 0.0 for model in graph_models), default=0.0)
@@ -273,6 +286,7 @@ def collect_layout_warnings(
         "nodes_with_geometry": len(boxes),
         "nodes_without_geometry": len(missing_geometry),
         "overlaps": len(overlaps),
+        "edge_route_crossings": len(route_crossings),
         "estimated_canvas": (round(max_right), round(max_bottom)),
         "page_canvas": (round(page_width), round(page_height)),
         "viewport": (round(dx), round(dy)),
@@ -282,6 +296,149 @@ def collect_layout_warnings(
 
 def boxes_overlap(left: BoundingBox, right: BoundingBox) -> bool:
     return left.x < right.right and left.right > right.x and left.y < right.bottom and left.bottom > right.y
+
+
+def edge_waypoints(cell: ET.Element) -> list[tuple[float, float]]:
+    geometry = find_geometry(cell)
+    if geometry is None:
+        return []
+
+    points: list[tuple[float, float]] = []
+    for child in geometry:
+        if local_name(child.tag) != "Array" or child.get("as") != "points":
+            continue
+        for point in child:
+            if local_name(point.tag) != "mxPoint":
+                continue
+            x = parse_float(point.get("x"))
+            y = parse_float(point.get("y"))
+            if x is not None and y is not None:
+                points.append((x, y))
+    return points
+
+
+def collect_edge_route_crossings(
+    cells: list[ET.Element],
+    boxes_by_id: dict[str, BoundingBox],
+) -> list[tuple[str, str]]:
+    crossings: list[tuple[str, str]] = []
+    edge_cells = [cell for cell in cells if cell.get("edge") == "1"]
+
+    for edge in edge_cells:
+        if ignores_route_crossing(edge):
+            continue
+
+        edge_id = edge.get("id", "(no id)")
+        source_id = edge.get("source")
+        target_id = edge.get("target")
+        if not source_id or not target_id:
+            continue
+        source_box = boxes_by_id.get(source_id)
+        target_box = boxes_by_id.get(target_id)
+        if source_box is None or target_box is None:
+            continue
+
+        route_points = [source_box.center, *edge_waypoints(edge), target_box.center]
+        ignored_ids = {source_id, target_id}
+        crossed_by_edge: set[str] = set()
+
+        for start, end in zip(route_points, route_points[1:]):
+            if start == end:
+                continue
+            for box_id, box in boxes_by_id.items():
+                if box_id in ignored_ids or box_id in crossed_by_edge:
+                    continue
+                if segment_crosses_box(start, end, box):
+                    crossings.append((edge_id, box_id))
+                    crossed_by_edge.add(box_id)
+
+    return crossings
+
+
+def segment_crosses_box(
+    start: tuple[float, float],
+    end: tuple[float, float],
+    box: BoundingBox,
+) -> bool:
+    x1, y1 = start
+    x2, y2 = end
+    epsilon = 1e-9
+
+    if abs(y1 - y2) < epsilon:
+        y = y1
+        return (
+            box.y + epsilon < y < box.bottom - epsilon
+            and ranges_overlap_strict(x1, x2, box.x, box.right)
+        )
+
+    if abs(x1 - x2) < epsilon:
+        x = x1
+        return (
+            box.x + epsilon < x < box.right - epsilon
+            and ranges_overlap_strict(y1, y2, box.y, box.bottom)
+        )
+
+    if point_inside_box_strict(start, box) or point_inside_box_strict(end, box):
+        return True
+
+    corners = [
+        (box.x, box.y),
+        (box.right, box.y),
+        (box.right, box.bottom),
+        (box.x, box.bottom),
+    ]
+    sides = list(zip(corners, corners[1:] + corners[:1]))
+    return any(segments_intersect(start, end, side_start, side_end) for side_start, side_end in sides)
+
+
+def ranges_overlap_strict(a_start: float, a_end: float, b_start: float, b_end: float) -> bool:
+    return max(min(a_start, a_end), b_start) < min(max(a_start, a_end), b_end)
+
+
+def point_inside_box_strict(point: tuple[float, float], box: BoundingBox) -> bool:
+    x, y = point
+    return box.x < x < box.right and box.y < y < box.bottom
+
+
+def segments_intersect(
+    a_start: tuple[float, float],
+    a_end: tuple[float, float],
+    b_start: tuple[float, float],
+    b_end: tuple[float, float],
+) -> bool:
+    def orientation(
+        p: tuple[float, float],
+        q: tuple[float, float],
+        r: tuple[float, float],
+    ) -> float:
+        return (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1])
+
+    def on_segment(
+        p: tuple[float, float],
+        q: tuple[float, float],
+        r: tuple[float, float],
+    ) -> bool:
+        return (
+            min(p[0], r[0]) <= q[0] <= max(p[0], r[0])
+            and min(p[1], r[1]) <= q[1] <= max(p[1], r[1])
+        )
+
+    o1 = orientation(a_start, a_end, b_start)
+    o2 = orientation(a_start, a_end, b_end)
+    o3 = orientation(b_start, b_end, a_start)
+    o4 = orientation(b_start, b_end, a_end)
+
+    epsilon = 1e-9
+    if abs(o1) < epsilon and on_segment(a_start, b_start, a_end):
+        return True
+    if abs(o2) < epsilon and on_segment(a_start, b_end, a_end):
+        return True
+    if abs(o3) < epsilon and on_segment(b_start, a_start, b_end):
+        return True
+    if abs(o4) < epsilon and on_segment(b_start, a_end, b_end):
+        return True
+
+    return (o1 > 0) != (o2 > 0) and (o3 > 0) != (o4 > 0)
 
 
 def collect_cardinality_warnings(cells: list[ET.Element]) -> list[str]:
@@ -402,6 +559,7 @@ def main() -> int:
             print(f"Nodes with geometry: {summary['nodes_with_geometry']}")
             print(f"Nodes without geometry: {summary['nodes_without_geometry']}")
             print(f"Visual overlaps: {summary['overlaps']}")
+            print(f"Edge route crossings: {summary['edge_route_crossings']}")
             print(f"Estimated canvas: {estimated_width} x {estimated_height}")
             print(f"Page canvas: {page_width} x {page_height}")
             print(f"Viewport: {viewport_width} x {viewport_height}")

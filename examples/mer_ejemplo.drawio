@@ -21,88 +21,164 @@
           <mxGeometry x="700" y="270" width="120" height="70" as="geometry" />
         </mxCell>
         <mxCell id="edge_cliente_realiza" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_cliente" target="rel_realiza">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="285" y="305" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="edge_realiza_pedido" value="0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_realiza" target="entity_pedido">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="455" y="305" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="edge_pedido_contiene" value="1..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_pedido" target="rel_contiene">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="665" y="305" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="edge_contiene_producto" value="0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_contiene" target="entity_producto">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="855" y="305" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_cliente_id_cliente" value="id_cliente" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="70" y="130" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_cliente_attr_1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_cliente_id_cliente" target="entity_cliente">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="130" y="220" />
+              <mxPoint x="190" y="220" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_cliente_nombre" value="nombre" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="220" y="130" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_cliente_attr_2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_cliente_nombre" target="entity_cliente">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="220" />
+              <mxPoint x="190" y="220" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_cliente_email" value="email" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="70" y="430" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_cliente_attr_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_cliente_email" target="entity_cliente">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="130" y="380" />
+              <mxPoint x="190" y="380" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_cliente_telefono" value="telefono" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="220" y="430" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_cliente_attr_4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_cliente_telefono" target="entity_cliente">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="380" />
+              <mxPoint x="190" y="380" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_pedido_id_pedido" value="id_pedido" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="450" y="130" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_pedido_attr_1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_pedido_id_pedido" target="entity_pedido">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="510" y="220" />
+              <mxPoint x="570" y="220" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_pedido_fecha_pedido" value="fecha_pedido" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="600" y="130" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_pedido_attr_2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_pedido_fecha_pedido" target="entity_pedido">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="660" y="220" />
+              <mxPoint x="570" y="220" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_pedido_total" value="total" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="450" y="430" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_pedido_attr_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_pedido_total" target="entity_pedido">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="510" y="380" />
+              <mxPoint x="570" y="380" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_pedido_estado" value="estado" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="600" y="430" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_pedido_attr_4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_pedido_estado" target="entity_pedido">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="660" y="380" />
+              <mxPoint x="570" y="380" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_producto_id_producto" value="id_producto" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="830" y="130" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_producto_attr_1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_producto_id_producto" target="entity_producto">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="890" y="220" />
+              <mxPoint x="950" y="220" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_producto_nombre" value="nombre" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="980" y="130" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_producto_attr_2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_producto_nombre" target="entity_producto">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="220" />
+              <mxPoint x="950" y="220" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_producto_precio" value="precio" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="830" y="430" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_producto_attr_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_producto_precio" target="entity_producto">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="890" y="380" />
+              <mxPoint x="950" y="380" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="attr_producto_stock" value="stock" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="980" y="430" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="edge_producto_attr_4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_producto_stock" target="entity_producto">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="380" />
+              <mxPoint x="950" y="380" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

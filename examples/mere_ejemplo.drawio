@@ -12,7 +12,7 @@
           <mxGeometry x="1320" y="40" width="260" height="40" as="geometry" />
         </mxCell>
         <mxCell id="zone_detalle" value="Zona detalle / asociativa" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#334155;" vertex="1" parent="1">
-          <mxGeometry x="760" y="640" width="260" height="40" as="geometry" />
+          <mxGeometry x="500" y="680" width="260" height="40" as="geometry" />
         </mxCell>
         <mxCell id="entity_cliente" value="Cliente&lt;br&gt;----------------&lt;br&gt;id_cliente: int&lt;br&gt;nombre: varchar(100)&lt;br&gt;email: varchar(150)&lt;br&gt;telefono: varchar(20)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
           <mxGeometry x="80" y="120" width="220" height="155" as="geometry" />
@@ -36,22 +36,51 @@
           <mxGeometry x="1190" y="470" width="120" height="80" as="geometry" />
         </mxCell>
         <mxCell id="edge_cliente_realiza" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_cliente" target="rel_realiza">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="197.5" />
+              <mxPoint x="350" y="195" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="edge_realiza_pedido" value="0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_realiza" target="entity_pedido">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="590" y="195" />
+              <mxPoint x="590" y="197.5" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="edge_pedido_contiene" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_pedido" target="rel_contiene">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="760" y="360" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="edge_contiene_detalle" value="1..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_contiene" target="entity_detalle_pedido">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="760" y="620" />
+              <mxPoint x="920" y="620" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="edge_detalle_referencia" value="0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_detalle_pedido" target="rel_referencia">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="920" y="620" />
+              <mxPoint x="1250" y="620" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="edge_referencia_producto" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_referencia" target="entity_producto">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1250" y="350" />
+              <mxPoint x="1430" y="350" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

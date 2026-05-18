@@ -71,6 +71,7 @@ def add_edge(
     source: str,
     target: str,
     style: str = EDGE_STYLE,
+    points: list[tuple[int, int]] | None = None,
 ) -> None:
     cell = ET.SubElement(
         root,
@@ -85,7 +86,11 @@ def add_edge(
             "target": target,
         },
     )
-    ET.SubElement(cell, "mxGeometry", {"relative": "1", "as": "geometry"})
+    geometry = ET.SubElement(cell, "mxGeometry", {"relative": "1", "as": "geometry"})
+    if points:
+        array = ET.SubElement(geometry, "Array", {"as": "points"})
+        for x, y in points:
+            ET.SubElement(array, "mxPoint", {"x": str(x), "y": str(y)})
 
 
 def add_attribute_group(
@@ -93,9 +98,16 @@ def add_attribute_group(
     entity_id: str,
     entity_key: str,
     attributes: list[tuple[str, int, int]],
+    entity_center: tuple[int, int],
+    top_lane_y: int,
+    bottom_lane_y: int,
 ) -> None:
+    entity_center_x, entity_center_y = entity_center
     for index, (attribute, x, y) in enumerate(attributes, start=1):
         attr_id = f"attr_{entity_key}_{attribute}"
+        attr_center_x = x + 60
+        attr_center_y = y + 22
+        lane_y = top_lane_y if attr_center_y < entity_center_y else bottom_lane_y
         add_vertex(root, attr_id, attribute, ATTRIBUTE_STYLE, x, y, 120, 45)
         add_edge(
             root,
@@ -104,6 +116,7 @@ def add_attribute_group(
             attr_id,
             entity_id,
             ATTRIBUTE_EDGE_STYLE,
+            points=[(attr_center_x, lane_y), (entity_center_x, lane_y)],
         )
 
 
@@ -149,10 +162,38 @@ def build_diagram() -> ET.ElementTree:
     add_vertex(root, "rel_realiza", "realiza", RELATIONSHIP_STYLE, 320, 270, 120, 70)
     add_vertex(root, "rel_contiene", "contiene", RELATIONSHIP_STYLE, 700, 270, 120, 70)
 
-    add_edge(root, "edge_cliente_realiza", "1", "entity_cliente", "rel_realiza")
-    add_edge(root, "edge_realiza_pedido", "0..N", "rel_realiza", "entity_pedido")
-    add_edge(root, "edge_pedido_contiene", "1..N", "entity_pedido", "rel_contiene")
-    add_edge(root, "edge_contiene_producto", "0..N", "rel_contiene", "entity_producto")
+    add_edge(
+        root,
+        "edge_cliente_realiza",
+        "1",
+        "entity_cliente",
+        "rel_realiza",
+        points=[(285, 305)],
+    )
+    add_edge(
+        root,
+        "edge_realiza_pedido",
+        "0..N",
+        "rel_realiza",
+        "entity_pedido",
+        points=[(455, 305)],
+    )
+    add_edge(
+        root,
+        "edge_pedido_contiene",
+        "1..N",
+        "entity_pedido",
+        "rel_contiene",
+        points=[(665, 305)],
+    )
+    add_edge(
+        root,
+        "edge_contiene_producto",
+        "0..N",
+        "rel_contiene",
+        "entity_producto",
+        points=[(855, 305)],
+    )
 
     add_attribute_group(
         root,
@@ -164,6 +205,9 @@ def build_diagram() -> ET.ElementTree:
             ("email", 70, 430),
             ("telefono", 220, 430),
         ],
+        entity_center=(190, 305),
+        top_lane_y=220,
+        bottom_lane_y=380,
     )
     add_attribute_group(
         root,
@@ -175,6 +219,9 @@ def build_diagram() -> ET.ElementTree:
             ("total", 450, 430),
             ("estado", 600, 430),
         ],
+        entity_center=(570, 305),
+        top_lane_y=220,
+        bottom_lane_y=380,
     )
     add_attribute_group(
         root,
@@ -186,6 +233,9 @@ def build_diagram() -> ET.ElementTree:
             ("precio", 830, 430),
             ("stock", 980, 430),
         ],
+        entity_center=(950, 305),
+        top_lane_y=220,
+        bottom_lane_y=380,
     )
 
     return ET.ElementTree(mxfile)

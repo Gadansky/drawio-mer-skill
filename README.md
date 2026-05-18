@@ -63,6 +63,8 @@ The skill entrypoint is `SKILL.md`.
 
 Generate readable diagrams by planning zones first. For medium diagrams, use at least a `2400 x 1600` canvas. For large databases, expand the canvas or split the model into pages by module, for example overview, sales, users/permissions, production, audit/tracing, and notifications.
 
+For connector readability, reserve horizontal and vertical lanes in the grid. Prefer explicit draw.io waypoints (`mxPoint` inside `<Array as="points">`) so relationship and attribute connectors do not pass through entities, attributes, relationship diamonds, MERE blocks, or labels.
+
 Generate a basic Chen-style MER example:
 
 ```powershell
@@ -94,13 +96,19 @@ python scripts/validate_drawio_mer.py examples/mer_ejemplo.drawio --mode mer --c
 python scripts/validate_drawio_mer.py examples/mere_ejemplo.drawio --mode mere --check-layout
 ```
 
+`--check-layout` reports vertex geometry, estimated canvas size, visual overlaps, and edge route crossings. Overlaps and route crossings are warnings, not critical XML errors.
+
 Test the negative overlap fixture:
 
 ```powershell
 python scripts/validate_drawio_mer.py examples/overlap_invalid.drawio --mode mer --check-layout
 ```
 
-`--check-layout` reports vertex geometry, estimated canvas size, and visual overlaps. Overlaps are warnings, not critical XML errors.
+Test the negative route-crossing fixture:
+
+```powershell
+python scripts/validate_drawio_mer.py examples/route_crossing_invalid.drawio --mode mer --check-layout
+```
 
 The skill scripts use only Python standard library modules.
 

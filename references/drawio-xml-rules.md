@@ -66,6 +66,19 @@ Example:
 </mxCell>
 ```
 
+Prefer explicit orthogonal routing with intermediate `mxPoint` waypoints when a direct connector would cross a node:
+
+```xml
+<mxCell id="edge_cliente_realiza" value="1" edge="1" source="entity_cliente" target="rel_realiza" parent="1">
+  <mxGeometry relative="1" as="geometry">
+    <Array as="points">
+      <mxPoint x="280" y="305"/>
+      <mxPoint x="320" y="305"/>
+    </Array>
+  </mxGeometry>
+</mxCell>
+```
+
 ## mxGeometry and Layout
 
 Every visible vertex must have an `mxGeometry` child with:
@@ -79,6 +92,8 @@ Every visible vertex must have an `mxGeometry` child with:
 Visible nodes must not share overlapping bounding boxes. Attribute ovals, relationship diamonds, entity rectangles, MERE table blocks, and notes should all have explicit non-overlapping geometry unless the overlap is intentionally marked with `ignoreLayoutOverlap=1` in the cell style.
 
 Labels and cardinalities should be placed outside entity rectangles, attribute ovals, relationship diamonds, and MERE blocks.
+
+Edge routes should use planned horizontal and vertical lanes in the grid. Do not route connector segments through the bounding boxes of visible nodes. Connect from the nearest practical side of the node and reserve free lanes between functional zones. If a crossing is intentionally unavoidable, mark the edge style with `ignoreRouteCrossing=1`.
 
 Recommended sizes:
 
@@ -107,4 +122,5 @@ Check:
 - In MERE, data types and internal attributes are allowed.
 - With layout validation enabled, every visible vertex has geometry.
 - With layout validation enabled, visual nodes do not overlap.
+- With layout validation enabled, edge route segments do not cross visible node bounding boxes.
 - With layout validation enabled, estimated canvas size is reported.

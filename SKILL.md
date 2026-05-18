@@ -195,6 +195,17 @@ Minimum spacing:
 - Place relationship diamonds between the participating entities.
 - Use orthogonal connectors whenever possible.
 
+Edge routing rules:
+
+- Plan free horizontal and vertical connector lanes in the same grid used for nodes.
+- Reserve space between functional zones for connector lanes.
+- Connect from the nearest logical side of each node; do not rely on center-to-center lines when that would cross other shapes.
+- Use explicit intermediate `mxPoint` waypoints inside `<Array as="points">` for routed connectors.
+- Route attribute connectors through short lanes above, below, or beside the owning entity.
+- Route entity-relationship-entity paths through clean orthogonal segments.
+- Do not allow edge segments to pass through the bounding boxes of entities, attributes, relationship diamonds, MERE blocks, or labels.
+- If a crossing is intentionally unavoidable, mark only that edge with `ignoreRouteCrossing=1` in its style and explain why.
+
 Recommended visual sizes:
 
 - MER entity rectangle: `140 x 50`.
@@ -278,7 +289,7 @@ To create a MER:
 9. Create relationship diamonds and connect them to entities.
 10. Add cardinality labels on entity-to-relationship connectors.
 11. Expand canvas or split pages if needed.
-12. Validate in MER mode, and use `--check-layout` for visual overlap checks.
+12. Validate in MER mode, and use `--check-layout` for visual overlap and edge route checks.
 
 To create a MERE:
 
@@ -292,7 +303,7 @@ To create a MERE:
 8. Add ternary relationships if needed.
 9. Add data types when appropriate.
 10. Expand canvas or split pages if needed.
-11. Validate in MERE mode, and use `--check-layout` for visual overlap checks.
+11. Validate in MERE mode, and use `--check-layout` for visual overlap and edge route checks.
 
 To modify an existing file:
 
@@ -324,6 +335,7 @@ Before returning a `.drawio` file, check:
 - MERE may include internal attributes and data types.
 - Visual vertices have `mxGeometry` with `x`, `y`, `width`, and `height`.
 - Visible nodes do not overlap unless explicitly justified with `ignoreLayoutOverlap=1` in style.
+- Edge routes do not cross visible node bounding boxes unless explicitly justified with `ignoreRouteCrossing=1` in the edge style.
 - The canvas is large enough for the number of nodes, or the model is split into pages.
 
 ## Included Scripts
