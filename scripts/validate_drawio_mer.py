@@ -88,6 +88,30 @@ def visible_value(cell: ET.Element) -> str:
     return value
 
 
+def raw_value(cell: ET.Element) -> str:
+    return html.unescape(cell.get("value") or "")
+
+
+def cell_style(cell: ET.Element) -> str:
+    return (cell.get("style") or "").lower()
+
+
+def is_attribute_oval(cell: ET.Element) -> bool:
+    return cell.get("vertex") == "1" and "ellipse" in cell_style(cell)
+
+
+def is_relationship_diamond(cell: ET.Element) -> bool:
+    style = cell_style(cell)
+    return cell.get("vertex") == "1" and ("rhombus" in style or "shape=rhombus" in style)
+
+
+def has_internal_attribute_list(cell: ET.Element) -> bool:
+    value = raw_value(cell).lower()
+    if "<br" in value or "<hr" in value:
+        return True
+    return "\n" in visible_value(cell)
+
+
 def collect_type_warnings(cells: list[ET.Element], mode: str) -> list[str]:
     if mode == "mere":
         return []
@@ -102,6 +126,37 @@ def collect_type_warnings(cells: list[ET.Element], mode: str) -> list[str]:
             warnings.append(
                 f"Data types detected in MER mode in mxCell {cell_id}: {joined}"
             )
+    return warnings
+
+
+def collect_mer_notation_warnings(cells: list[ET.Element]) -> list[str]:
+    warnings: list[str] = []
+    entity_cells = [
+        cell
+        for cell in cells
+        if cell.get("vertex") == "1" and (cell.get("id") or "").startswith("entity_")
+    ]
+    attribute_ovals = [cell for cell in cells if is_attribute_oval(cell)]
+    relationship_diamonds = [cell for cell in cells if is_relationship_diamond(cell)]
+
+    for cell in entity_cells:
+        if has_internal_attribute_list(cell):
+            cell_id = cell.get("id", "(no id)")
+            warnings.append(
+                f"MER entity {cell_id} appears to contain internal attributes; "
+                "MER should use separate attribute ovals connected to the entity."
+            )
+
+    if not attribute_ovals:
+        warnings.append(
+            "MER mode did not find attribute ovals (style containing 'ellipse')."
+        )
+
+    if not relationship_diamonds:
+        warnings.append(
+            "MER mode did not find relationship diamonds (style containing 'rhombus')."
+        )
+
     return warnings
 
 
@@ -150,9 +205,15 @@ def validate(path: Path, mode: str) -> tuple[list[str], list[str], dict[str, int
 
     edge_count = 0
     vertex_count = 0
+    attribute_oval_count = 0
+    relationship_diamond_count = 0
     for cell in cells:
         if cell.get("vertex") == "1":
             vertex_count += 1
+        if is_attribute_oval(cell):
+            attribute_oval_count += 1
+        if is_relationship_diamond(cell):
+            relationship_diamond_count += 1
         if cell.get("edge") == "1":
             edge_count += 1
             cell_id = cell.get("id", "(no id)")
@@ -169,11 +230,15 @@ def validate(path: Path, mode: str) -> tuple[list[str], list[str], dict[str, int
 
     warnings.extend(collect_cardinality_warnings(cells))
     warnings.extend(collect_type_warnings(cells, mode))
+    if mode == "mer":
+        warnings.extend(collect_mer_notation_warnings(cells))
 
     summary = {
         "mx_cells": len(cells),
         "vertices": vertex_count,
         "edges": edge_count,
+        "attribute_ovals": attribute_oval_count,
+        "relationship_diamonds": relationship_diamond_count,
         "warnings": len(warnings),
         "errors": len(errors),
     }
@@ -196,6 +261,9 @@ def main() -> int:
         print(f"mxCell: {summary['mx_cells']}")
         print(f"Vertices: {summary['vertices']}")
         print(f"Edges: {summary['edges']}")
+        if mode == "mer":
+            print(f"Attribute ovals: {summary['attribute_ovals']}")
+            print(f"Relationship diamonds: {summary['relationship_diamonds']}")
 
     if warnings:
         print("\nWarnings:")

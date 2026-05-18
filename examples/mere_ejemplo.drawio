@@ -1,29 +1,47 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile host="app.diagrams.net" agent="drawio-mer-skill" version="24.7.17">
   <diagram id="mere_ejemplo" name="MERE">
-    <mxGraphModel dx="1100" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="entity_cliente" value="Cliente&lt;br&gt;----------------&lt;br&gt;id_cliente: int&lt;br&gt;nombre: varchar(100)&lt;br&gt;email: varchar(150)&lt;br&gt;telefono: varchar(20)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
-          <mxGeometry x="80" y="110" width="210" height="150" as="geometry" />
+          <mxGeometry x="60" y="90" width="220" height="155" as="geometry" />
         </mxCell>
         <mxCell id="entity_pedido" value="Pedido&lt;br&gt;----------------&lt;br&gt;id_pedido: int&lt;br&gt;id_cliente: int&lt;br&gt;fecha_pedido: date&lt;br&gt;total: decimal(10,2)&lt;br&gt;estado: varchar(30)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
-          <mxGeometry x="350" y="110" width="210" height="150" as="geometry" />
+          <mxGeometry x="420" y="90" width="220" height="155" as="geometry" />
         </mxCell>
         <mxCell id="entity_producto" value="Producto&lt;br&gt;----------------&lt;br&gt;id_producto: int&lt;br&gt;nombre: varchar(100)&lt;br&gt;precio: decimal(10,2)&lt;br&gt;stock: int" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
-          <mxGeometry x="755" y="110" width="210" height="150" as="geometry" />
+          <mxGeometry x="820" y="90" width="220" height="155" as="geometry" />
         </mxCell>
         <mxCell id="entity_detalle_pedido" value="DetallePedido&lt;br&gt;----------------&lt;br&gt;id_pedido: int&lt;br&gt;id_producto: int&lt;br&gt;cantidad: int&lt;br&gt;precio_unitario: decimal(10,2)&lt;br&gt;----------------&lt;br&gt;Entidad asociativa/debil" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#9673a6;fillColor=#e1d5e7;strokeWidth=2;dashed=1;" vertex="1" parent="1">
-          <mxGeometry x="500" y="360" width="210" height="150" as="geometry" />
+          <mxGeometry x="520" y="420" width="220" height="155" as="geometry" />
         </mxCell>
-        <mxCell id="edge_cliente_pedido" value="1 realiza 0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="entity_cliente" target="entity_pedido">
+        <mxCell id="rel_realiza" value="realiza" style="rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#fff7ed;" vertex="1" parent="1">
+          <mxGeometry x="300" y="125" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_contiene" value="contiene" style="rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#fff7ed;" vertex="1" parent="1">
+          <mxGeometry x="475" y="305" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_referencia" value="referencia" style="rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#fff7ed;" vertex="1" parent="1">
+          <mxGeometry x="775" y="305" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cliente_realiza" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_cliente" target="rel_realiza">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_pedido_detalle" value="1 contiene 1..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="entity_pedido" target="entity_detalle_pedido">
+        <mxCell id="edge_realiza_pedido" value="0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_realiza" target="entity_pedido">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_detalle_producto" value="0..N referencia 1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="entity_detalle_pedido" target="entity_producto">
+        <mxCell id="edge_pedido_contiene" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_pedido" target="rel_contiene">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_contiene_detalle" value="1..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_contiene" target="entity_detalle_pedido">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_detalle_referencia" value="0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_detalle_pedido" target="rel_referencia">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_referencia_producto" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_referencia" target="entity_producto">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>

@@ -17,7 +17,14 @@ ASSOCIATIVE_STYLE = (
     "spacing=8;fontSize=12;strokeColor=#9673a6;fillColor=#e1d5e7;"
     "strokeWidth=2;dashed=1;"
 )
-EDGE_STYLE = "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;"
+RELATIONSHIP_STYLE = (
+    "rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;"
+    "fontSize=12;strokeColor=#334155;fillColor=#fff7ed;"
+)
+EDGE_STYLE = (
+    "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;"
+    "html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;"
+)
 
 
 def entity_value(name: str, attributes: list[str], note: str | None = None) -> str:
@@ -51,7 +58,32 @@ def add_entity(
     ET.SubElement(
         cell,
         "mxGeometry",
-        {"x": str(x), "y": str(y), "width": "210", "height": "150", "as": "geometry"},
+        {"x": str(x), "y": str(y), "width": "220", "height": "155", "as": "geometry"},
+    )
+
+
+def add_relationship(
+    root: ET.Element,
+    cell_id: str,
+    value: str,
+    x: int,
+    y: int,
+) -> None:
+    cell = ET.SubElement(
+        root,
+        "mxCell",
+        {
+            "id": cell_id,
+            "value": value,
+            "style": RELATIONSHIP_STYLE,
+            "vertex": "1",
+            "parent": "1",
+        },
+    )
+    ET.SubElement(
+        cell,
+        "mxGeometry",
+        {"x": str(x), "y": str(y), "width": "120", "height": "80", "as": "geometry"},
     )
 
 
@@ -92,8 +124,8 @@ def build_diagram() -> ET.ElementTree:
         diagram,
         "mxGraphModel",
         {
-            "dx": "1100",
-            "dy": "800",
+            "dx": "1200",
+            "dy": "900",
             "grid": "1",
             "gridSize": "10",
             "guides": "1",
@@ -123,8 +155,8 @@ def build_diagram() -> ET.ElementTree:
             "email: varchar(150)",
             "telefono: varchar(20)",
         ],
-        80,
-        110,
+        60,
+        90,
     )
     add_entity(
         root,
@@ -137,8 +169,8 @@ def build_diagram() -> ET.ElementTree:
             "total: decimal(10,2)",
             "estado: varchar(30)",
         ],
-        350,
-        110,
+        420,
+        90,
     )
     add_entity(
         root,
@@ -150,8 +182,8 @@ def build_diagram() -> ET.ElementTree:
             "precio: decimal(10,2)",
             "stock: int",
         ],
-        755,
-        110,
+        820,
+        90,
     )
     add_entity(
         root,
@@ -163,27 +195,22 @@ def build_diagram() -> ET.ElementTree:
             "cantidad: int",
             "precio_unitario: decimal(10,2)",
         ],
-        500,
-        360,
+        520,
+        420,
         style=ASSOCIATIVE_STYLE,
         note="Entidad asociativa/debil",
     )
 
-    add_edge(root, "edge_cliente_pedido", "1 realiza 0..N", "entity_cliente", "entity_pedido")
-    add_edge(
-        root,
-        "edge_pedido_detalle",
-        "1 contiene 1..N",
-        "entity_pedido",
-        "entity_detalle_pedido",
-    )
-    add_edge(
-        root,
-        "edge_detalle_producto",
-        "0..N referencia 1",
-        "entity_detalle_pedido",
-        "entity_producto",
-    )
+    add_relationship(root, "rel_realiza", "realiza", 300, 125)
+    add_relationship(root, "rel_contiene", "contiene", 475, 305)
+    add_relationship(root, "rel_referencia", "referencia", 775, 305)
+
+    add_edge(root, "edge_cliente_realiza", "1", "entity_cliente", "rel_realiza")
+    add_edge(root, "edge_realiza_pedido", "0..N", "rel_realiza", "entity_pedido")
+    add_edge(root, "edge_pedido_contiene", "1", "entity_pedido", "rel_contiene")
+    add_edge(root, "edge_contiene_detalle", "1..N", "rel_contiene", "entity_detalle_pedido")
+    add_edge(root, "edge_detalle_referencia", "0..N", "entity_detalle_pedido", "rel_referencia")
+    add_edge(root, "edge_referencia_producto", "1", "rel_referencia", "entity_producto")
 
     return ET.ElementTree(mxfile)
 

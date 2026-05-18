@@ -7,6 +7,20 @@
 - `1..N`
 - `0..N`
 
+## MER Shape Rules
+
+- Entity: rectangle, name only.
+- Attribute: oval/bubble connected to the owning entity.
+- Relationship: diamond/rhombus connected to participating entities.
+- Cardinality: connector label between an entity and a relationship diamond.
+
+## MERE Shape Rules
+
+- Entity: table/block style may contain internal attributes.
+- Attribute data types are allowed.
+- Relationship diamonds are preferred for clarity.
+- Weak/associative entities must be visually distinguished.
+
 ## Entity Names
 
 - Use singular nouns.
@@ -25,8 +39,9 @@ Examples:
 - Use clear names.
 - Use `snake_case` or `camelCase`.
 - Keep naming consistent.
+- In MER, draw each attribute as an oval.
 - In MER, do not include data types.
-- In MERE, allow data types.
+- In MERE, internal attributes and data types are allowed.
 
 Correct MER examples:
 
@@ -68,19 +83,19 @@ Examples:
 
 Must include:
 
-- Entities.
-- Attributes.
-- Relationships.
+- Entity rectangles.
+- Attribute ovals.
+- Relationship diamonds.
 - Cardinalities.
 
-Must not include data types.
+Must not include internal entity attributes or data types.
 
 ## MERE
 
 May include:
 
 - Entities.
-- Attributes.
+- Internal attributes.
 - Relationships.
 - Cardinalities.
 - Data types.

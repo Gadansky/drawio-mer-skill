@@ -6,16 +6,26 @@ Codex skill for creating, editing, validating, and reviewing MER/MERE diagrams i
 
 - Creates and edits `.drawio`, `.drawio.xml`, and diagrams.net XML files.
 - Uses uncompressed, versionable XML.
-- Supports MER course notation: entities, attributes, relationships, and cardinalities without data types.
-- Supports MERE / EER notation: MER plus extended elements and data types when appropriate.
+- Supports MER course notation using classic Chen-style shapes.
+- Supports MERE / EER notation using extended blocks, internal attributes, and data types when appropriate.
 - Provides Python scripts to generate and validate sample diagrams.
 
 ## MER vs MERE
 
-- `MER` = entities + attributes + relationships + cardinalities, without data types.
-- `MERE` = MER + extended elements + data types allowed.
+- `MER` = entity rectangles + attribute ovals + relationship diamonds + cardinalities, without data types.
+- `MERE` = MER concepts + extended elements + data types allowed.
 
-Example MER entity:
+Correct MER structure:
+
+```text
+[Cliente] -- (id_cliente)
+[Cliente] -- (nombre)
+[Cliente] -- (email)
+[Cliente] -- (telefono)
+Cliente -- 1 -- <realiza> -- 0..N -- Pedido
+```
+
+Incorrect MER structure:
 
 ```text
 Cliente
@@ -26,7 +36,7 @@ email
 telefono
 ```
 
-Example MERE entity:
+Correct MERE entity:
 
 ```text
 Cliente
@@ -51,7 +61,7 @@ The skill entrypoint is `SKILL.md`.
 
 ## Scripts
 
-Generate a basic MER example:
+Generate a basic Chen-style MER example:
 
 ```powershell
 python scripts/create_basic_mer.py examples/mer_ejemplo.drawio

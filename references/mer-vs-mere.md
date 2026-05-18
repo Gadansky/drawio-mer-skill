@@ -7,23 +7,34 @@
 
 ## MER
 
-A MER represents the conceptual structure of a domain.
+A MER represents the conceptual structure of a domain using classic Chen-style notation.
 
 It includes:
 
-- Entities.
-- Attributes.
-- Relationships.
-- Cardinalities.
+- Entity rectangles.
+- Attribute ovals connected to entities.
+- Relationship diamonds connected to entities.
+- Cardinalities on relationship connectors.
 
 It does not include:
 
+- Attributes inside entity rectangles.
 - Data types.
 - SQL syntax.
 - Field sizes.
 - Physical database details.
 
 Correct MER example:
+
+```text
+[Cliente] -- (id_cliente)
+[Cliente] -- (nombre)
+[Cliente] -- (email)
+[Cliente] -- (telefono)
+Cliente -- 1 -- <realiza> -- 0..N -- Pedido
+```
+
+Incorrect MER example:
 
 ```text
 Cliente
@@ -34,23 +45,13 @@ email
 telefono
 ```
 
-Incorrect MER example:
-
-```text
-Cliente
-----------------
-id_cliente: int
-nombre: varchar(100)
-email: varchar(150)
-telefono: varchar(20)
-```
-
 ## MERE
 
 MERE means `Modelo Entidad-Relacion Extendido`.
 
-It includes MER elements and may add:
+It includes MER concepts and may add:
 
+- Entity/table blocks with internal attributes.
 - Data types.
 - Weak entities.
 - Associative entities.
@@ -75,10 +76,10 @@ telefono: varchar(20)
 
 ## Practical Rule
 
-If the user asks for `MER`, generate entities, attributes, relationships, and cardinalities without data types.
+If the user asks for `MER`, generate Chen-style entities, attributes, relationships, and cardinalities without data types.
 
-If the user asks for `MERE`, `MER extendido`, weak entities, inheritance, specialization, generalization, composite attributes, multivalued attributes, derived attributes, or ternary relationships, generate MERE and allow data types.
+If the user asks for `MERE`, `MER extendido`, weak entities, inheritance, specialization, generalization, composite attributes, multivalued attributes, derived attributes, or ternary relationships, generate MERE and allow internal attributes/data types.
 
-MER = entities + attributes + relationships + cardinalities, without data types.
+MER = entity rectangles + attribute ovals + relationship diamonds + cardinalities, without data types.
 
-MERE = MER + extended elements + data types allowed.
+MERE = MER concepts + extended elements + data types allowed.

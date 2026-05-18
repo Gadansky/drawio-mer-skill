@@ -18,26 +18,50 @@ Every diagram must preserve:
 <mxCell id="1" parent="0"/>
 ```
 
-## Entities
+## MER Entities
 
-Entities are nodes with `vertex="1"`.
+MER entities are rectangles with `vertex="1"` and a value containing only the entity name.
 
 Example:
 
 ```xml
-<mxCell id="entity_cliente" value="Cliente&lt;br&gt;id_cliente&lt;br&gt;nombre&lt;br&gt;email" vertex="1" parent="1">
-  <mxGeometry x="120" y="120" width="180" height="120" as="geometry"/>
+<mxCell id="entity_cliente" value="Cliente" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+  <mxGeometry x="120" y="120" width="120" height="50" as="geometry"/>
 </mxCell>
 ```
 
-## Relationships
+## MER Attributes
 
-Relationships are connectors with `edge="1"`.
+MER attributes are ovals with `vertex="1"` and style containing `ellipse`.
 
 Example:
 
 ```xml
-<mxCell id="edge_cliente_pedido" value="1 realiza 0..N" edge="1" source="entity_cliente" target="entity_pedido" parent="1">
+<mxCell id="attr_cliente_nombre" value="nombre" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+  <mxGeometry x="90" y="60" width="120" height="45" as="geometry"/>
+</mxCell>
+```
+
+## MER Relationships
+
+MER relationships are diamonds/rhombi with `vertex="1"` and style containing `rhombus`.
+
+Example:
+
+```xml
+<mxCell id="rel_realiza" value="realiza" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+  <mxGeometry x="280" y="120" width="120" height="70" as="geometry"/>
+</mxCell>
+```
+
+## Connectors
+
+Connectors use `edge="1"` and valid `source` and `target` IDs.
+
+Example:
+
+```xml
+<mxCell id="edge_cliente_realiza" value="1" edge="1" source="entity_cliente" target="rel_realiza" parent="1">
   <mxGeometry relative="1" as="geometry"/>
 </mxCell>
 ```
@@ -53,5 +77,8 @@ Check:
 - Edges have valid source cells.
 - Edges have valid target cells.
 - Cardinalities are standard.
+- In MER, entity cells do not contain internal attribute lists.
+- In MER, attribute ovals exist.
+- In MER, relationship diamonds exist.
 - In MER, data types are absent.
-- In MERE, data types are allowed.
+- In MERE, data types and internal attributes are allowed.

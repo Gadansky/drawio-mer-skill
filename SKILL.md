@@ -1,6 +1,6 @@
 ---
 name: drawio-mer
-description: Create, edit, validate, and review MER/MERE, DER, ER, and EER diagrams in .drawio, .drawio.xml, or diagrams.net XML files. Use this skill when Codex needs to generate, modify, fix, layout, or validate draw.io entity-relationship diagrams with entities, attributes, relationships, cardinalities, weak entities, associative entities, specialization/generalization, inheritance, or MER/MERE course notation.
+description: Create, edit, validate, and review MER/MERE, DER, ER, and EER diagrams in .drawio, .drawio.xml, or diagrams.net XML files. Use this skill when Codex needs to generate, modify, fix, layout, or validate draw.io entity-relationship diagrams with Chen-style MER notation, entity rectangles, attribute ovals, relationship diamonds, cardinalities, weak entities, associative entities, specialization/generalization, inheritance, or MER/MERE course notation.
 ---
 
 # Draw.io MER / MERE
@@ -15,8 +15,8 @@ Use this skill to work with entity-relationship models in draw.io/diagrams.net u
 
 Definitive rule:
 
-- MER = entities + attributes + relationships + cardinalities, without data types.
-- MERE = MER + extended elements + data types allowed.
+- MER = classic Chen-style notation: entity rectangles + attribute ovals + relationship diamonds + cardinalities, without data types.
+- MERE = extended model: entity/table blocks with internal attributes are allowed, extended elements are allowed, and data types are allowed.
 
 ## Trigger Cases
 
@@ -31,23 +31,33 @@ Use this skill when the user asks to:
 
 ## MER Rules
 
-A MER is a conceptual model.
+A MER must use classic Chen-style visual notation.
 
-It must show:
+MER must show:
 
-- Entities.
-- Attributes.
-- Relationships.
-- Cardinalities.
+- Entities as rectangles containing only the entity name.
+- Attributes as ovals/bubbles connected to the owning entity.
+- Relationships as diamonds/rhombi connected to entities.
+- Cardinalities on the connectors between entities and relationship diamonds.
 
-It must not show:
+MER must not show:
 
+- Attributes inside entity rectangles.
 - Data types.
 - SQL syntax.
 - Field sizes.
 - Physical database details.
 
-Correct MER example:
+Correct MER entity and attributes:
+
+```text
+[Cliente] -- (id_cliente)
+[Cliente] -- (nombre)
+[Cliente] -- (email)
+[Cliente] -- (telefono)
+```
+
+Incorrect MER entity:
 
 ```text
 Cliente
@@ -58,26 +68,29 @@ email
 telefono
 ```
 
-Incorrect MER example:
+Incorrect MER attributes with data types:
 
 ```text
 Cliente
 ----------------
 id_cliente: int
 nombre: varchar(100)
-email: varchar(150)
-telefono: varchar(20)
+```
+
+Correct MER relationship:
+
+```text
+Cliente -- 1 -- <realiza> -- 0..N -- Pedido
 ```
 
 ## MERE Rules
 
-A MERE includes MER elements and may add extended modeling features.
+A MERE includes MER concepts and may add extended modeling features. MERE may use entity/table blocks with internal attributes, especially when data types are useful.
 
-It may show:
+MERE may show:
 
-- Entities.
-- Attributes.
-- Relationships.
+- Entities with internal attributes.
+- Relationships as diamonds/rhombi or clear labeled connectors.
 - Cardinalities.
 - Data types.
 - Weak entities.
@@ -91,7 +104,7 @@ It may show:
 - Ternary or higher-degree relationships.
 - Additional constraints.
 
-Correct MERE example:
+Correct MERE entity:
 
 ```text
 Cliente
@@ -104,8 +117,8 @@ telefono: varchar(20)
 
 ## Decision Rules
 
-- When the user says `MER`, create entities, attributes, relationships, and cardinalities without data types.
-- When the user says `MERE`, `MER extendido`, weak entity, inheritance, specialization/generalization, composite attribute, multivalued attribute, derived attribute, or ternary relationship, create an extended model and allow data types.
+- When the user says `MER`, create Chen-style diagrams: rectangles for entities, ovals for attributes, diamonds for relationships, and connector labels for cardinalities.
+- When the user says `MERE`, `MER extendido`, weak entity, inheritance, specialization/generalization, composite attribute, multivalued attribute, derived attribute, or ternary relationship, create an extended model and allow internal attributes/data types.
 - If the user asks for data types in a MER, explain that the course MER notation does not include them and offer MERE or a logical/relational model instead.
 - Do not add data types in MER.
 - Allow data types in MERE.
@@ -135,33 +148,45 @@ Rules:
 - Preserve existing IDs and visual style when modifying a file.
 - Validate after edits.
 
-Entity example:
+MER entity example:
 
 ```xml
-<mxCell id="entity_cliente" value="Cliente&lt;br&gt;id_cliente&lt;br&gt;nombre&lt;br&gt;email" vertex="1" parent="1">
-  <mxGeometry x="120" y="120" width="180" height="120" as="geometry"/>
+<mxCell id="entity_cliente" value="Cliente" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+  <mxGeometry x="120" y="120" width="120" height="50" as="geometry"/>
 </mxCell>
 ```
 
-Relationship example:
+MER attribute example:
 
 ```xml
-<mxCell id="edge_cliente_pedido" value="1 realiza 0..N" edge="1" source="entity_cliente" target="entity_pedido" parent="1">
-  <mxGeometry relative="1" as="geometry"/>
+<mxCell id="attr_cliente_nombre" value="nombre" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+  <mxGeometry x="80" y="60" width="120" height="45" as="geometry"/>
+</mxCell>
+```
+
+MER relationship example:
+
+```xml
+<mxCell id="rel_realiza" value="realiza" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+  <mxGeometry x="290" y="120" width="120" height="70" as="geometry"/>
 </mxCell>
 ```
 
 ## Visual Conventions
 
-Use a simple academic style:
+MER:
 
-- Entities: rectangles, conceptual tables, or blocks with internal attributes.
-- Attributes: inside entity blocks by default; use ovals only when the user requests classic Chen notation.
-- Relationships: labeled connectors.
-- Cardinalities: include both ends in the connector label when practical.
-- Main entities: center or upper area.
-- Detail/bridge entities: between the entities they connect.
-- Avoid excessive colors.
+- Entities: rectangles with entity name only.
+- Attributes: ovals/bubbles connected to the owning entity.
+- Relationships: diamonds/rhombi connected between entities.
+- Cardinalities: labels on entity-to-relationship connectors.
+
+MERE:
+
+- Entities: table/block style may contain attributes internally.
+- Data types: allowed.
+- Relationships: prefer diamonds/rhombi for clarity, but labeled connectors are acceptable when the model is dense.
+- Extended elements: visually distinguish weak/associative entities and inheritance structures.
 
 Recommended cardinalities:
 
@@ -183,20 +208,18 @@ DetallePedido 0..N ---- referencia ---- 1 Producto
 
 - Use clear names.
 - Keep one naming style: `snake_case` or `camelCase`.
+- For MER, draw each attribute as an oval connected to an entity.
 - For MER, do not include data types.
-- For MERE, allow data types when requested or when the extended example requires them.
-- Mark identifiers visually only when useful.
+- For MERE, internal attributes and data types are allowed.
 - Avoid `PK` and `FK` prefixes unless the user asks for a more logical/relational model.
 
 MER attribute example:
 
 ```text
-Producto
-----------------
-id_producto
-nombre
-precio
-stock
+(id_producto) -- [Producto]
+(nombre) -- [Producto]
+(precio) -- [Producto]
+(stock) -- [Producto]
 ```
 
 MERE attribute example:
@@ -210,28 +233,6 @@ precio: decimal(10,2)
 stock: int
 ```
 
-## Extended Elements
-
-For weak or associative entities:
-
-- Use a double border, dashed border, color distinction, or visible note.
-- Show the identifying or connecting relationships clearly.
-- Show the discriminator if applicable.
-
-For specialization/generalization:
-
-- Place the general entity above specialized entities.
-- Use a connector or generalization triangle.
-- Indicate total/partial or disjoint/overlapping only when specified by the user.
-
-Example:
-
-```text
-Persona
-  |-- Cliente
-  `-- Empleado
-```
-
 ## Workflow
 
 To create a MER:
@@ -240,10 +241,10 @@ To create a MER:
 2. Identify attributes.
 3. Identify relationships.
 4. Determine cardinalities.
-5. Create entity blocks.
-6. Add attributes without data types.
-7. Add labeled relationship connectors.
-8. Add cardinalities.
+5. Create entity rectangles with names only.
+6. Create attribute ovals and connect them to entities.
+7. Create relationship diamonds and connect them to entities.
+8. Add cardinality labels on entity-to-relationship connectors.
 9. Arrange the diagram.
 10. Validate in MER mode.
 
@@ -268,9 +269,9 @@ To modify an existing file:
 5. Add only unique new IDs.
 6. Make the smallest necessary XML change.
 7. Validate edges, sources, and targets.
-8. Keep the existing visual style.
-9. Do not add data types if the diagram is MER.
-10. Allow data types if the diagram is MERE.
+8. Keep the existing visual style unless the user asks to convert notation.
+9. Do not add data types or internal entity attributes if the diagram is MER.
+10. Allow data types and internal attributes if the diagram is MERE.
 
 ## Validation Checklist
 
@@ -282,15 +283,16 @@ Before returning a `.drawio` file, check:
 - IDs are unique.
 - Each edge references existing `source` and `target` cells.
 - Cardinalities use the expected format.
-- Entity names are clear.
-- Relationship names are clear.
-- MER has attributes but no data types.
-- MERE may include data types and visually distinct extended elements.
+- MER entities are rectangles with names only.
+- MER attributes are ovals connected to entities.
+- MER relationships are diamonds/rhombi connected to entities.
+- MER has no data types.
+- MERE may include internal attributes and data types.
 
 ## Included Scripts
 
-- `scripts/create_basic_mer.py`: creates a basic MER example without data types.
-- `scripts/create_basic_mere.py`: creates a basic MERE example with data types and an associative/weak detail entity.
+- `scripts/create_basic_mer.py`: creates a basic Chen-style MER example without data types.
+- `scripts/create_basic_mere.py`: creates a basic MERE example with internal attributes, data types, relationship diamonds, and an associative/weak detail entity.
 - `scripts/validate_drawio_mer.py`: validates draw.io XML with `--mode mer` or `--mode mere`.
 
 ## User Response Format

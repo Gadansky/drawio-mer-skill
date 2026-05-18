@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a basic uncompressed draw.io MER example."""
+"""Create a basic uncompressed draw.io MER example using Chen-style notation."""
 
 from __future__ import annotations
 
@@ -9,31 +9,44 @@ from xml.etree import ElementTree as ET
 
 
 ENTITY_STYLE = (
-    "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;"
-    "spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;"
+    "rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;"
+    "fontSize=14;strokeColor=#334155;fillColor=#f8fafc;"
 )
-EDGE_STYLE = "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;"
+ATTRIBUTE_STYLE = (
+    "ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;"
+    "fontSize=12;strokeColor=#334155;fillColor=#ffffff;"
+)
+RELATIONSHIP_STYLE = (
+    "rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;"
+    "fontSize=12;strokeColor=#334155;fillColor=#fff7ed;"
+)
+EDGE_STYLE = (
+    "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;"
+    "html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;"
+)
+ATTRIBUTE_EDGE_STYLE = (
+    "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;"
+    "html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;"
+)
 
 
-def entity_value(name: str, attributes: list[str]) -> str:
-    return name + "<br>----------------<br>" + "<br>".join(attributes)
-
-
-def add_entity(
+def add_vertex(
     root: ET.Element,
     cell_id: str,
-    name: str,
-    attributes: list[str],
+    value: str,
+    style: str,
     x: int,
     y: int,
+    width: int,
+    height: int,
 ) -> None:
     cell = ET.SubElement(
         root,
         "mxCell",
         {
             "id": cell_id,
-            "value": entity_value(name, attributes),
-            "style": ENTITY_STYLE,
+            "value": value,
+            "style": style,
             "vertex": "1",
             "parent": "1",
         },
@@ -41,7 +54,13 @@ def add_entity(
     ET.SubElement(
         cell,
         "mxGeometry",
-        {"x": str(x), "y": str(y), "width": "190", "height": "130", "as": "geometry"},
+        {
+            "x": str(x),
+            "y": str(y),
+            "width": str(width),
+            "height": str(height),
+            "as": "geometry",
+        },
     )
 
 
@@ -51,6 +70,7 @@ def add_edge(
     value: str,
     source: str,
     target: str,
+    style: str = EDGE_STYLE,
 ) -> None:
     cell = ET.SubElement(
         root,
@@ -58,7 +78,7 @@ def add_edge(
         {
             "id": cell_id,
             "value": value,
-            "style": EDGE_STYLE,
+            "style": style,
             "edge": "1",
             "parent": "1",
             "source": source,
@@ -66,6 +86,25 @@ def add_edge(
         },
     )
     ET.SubElement(cell, "mxGeometry", {"relative": "1", "as": "geometry"})
+
+
+def add_attribute_group(
+    root: ET.Element,
+    entity_id: str,
+    entity_key: str,
+    attributes: list[tuple[str, int, int]],
+) -> None:
+    for index, (attribute, x, y) in enumerate(attributes, start=1):
+        attr_id = f"attr_{entity_key}_{attribute}"
+        add_vertex(root, attr_id, attribute, ATTRIBUTE_STYLE, x, y, 130, 46)
+        add_edge(
+            root,
+            f"edge_{entity_key}_attr_{index}",
+            "",
+            attr_id,
+            entity_id,
+            ATTRIBUTE_EDGE_STYLE,
+        )
 
 
 def build_diagram() -> ET.ElementTree:
@@ -82,8 +121,8 @@ def build_diagram() -> ET.ElementTree:
         diagram,
         "mxGraphModel",
         {
-            "dx": "1000",
-            "dy": "700",
+            "dx": "1200",
+            "dy": "800",
             "grid": "1",
             "gridSize": "10",
             "guides": "1",
@@ -93,8 +132,8 @@ def build_diagram() -> ET.ElementTree:
             "fold": "1",
             "page": "1",
             "pageScale": "1",
-            "pageWidth": "850",
-            "pageHeight": "1100",
+            "pageWidth": "1100",
+            "pageHeight": "850",
             "math": "0",
             "shadow": "0",
         },
@@ -103,39 +142,57 @@ def build_diagram() -> ET.ElementTree:
     ET.SubElement(root, "mxCell", {"id": "0"})
     ET.SubElement(root, "mxCell", {"id": "1", "parent": "0"})
 
-    add_entity(
+    add_vertex(root, "entity_cliente", "Cliente", ENTITY_STYLE, 120, 280, 130, 55)
+    add_vertex(root, "entity_pedido", "Pedido", ENTITY_STYLE, 480, 280, 130, 55)
+    add_vertex(root, "entity_producto", "Producto", ENTITY_STYLE, 840, 280, 130, 55)
+
+    add_vertex(root, "rel_realiza", "realiza", RELATIONSHIP_STYLE, 315, 270, 110, 75)
+    add_vertex(root, "rel_contiene", "contiene", RELATIONSHIP_STYLE, 675, 270, 110, 75)
+
+    add_edge(root, "edge_cliente_realiza", "1", "entity_cliente", "rel_realiza")
+    add_edge(root, "edge_realiza_pedido", "0..N", "rel_realiza", "entity_pedido")
+    add_edge(root, "edge_pedido_contiene", "1..N", "entity_pedido", "rel_contiene")
+    add_edge(root, "edge_contiene_producto", "0..N", "rel_contiene", "entity_producto")
+
+    add_attribute_group(
         root,
         "entity_cliente",
-        "Cliente",
-        ["id_cliente", "nombre", "email", "telefono"],
-        80,
-        120,
+        "cliente",
+        [
+            ("id_cliente", 70, 130),
+            ("nombre", 220, 130),
+            ("email", 55, 410),
+            ("telefono", 215, 410),
+        ],
     )
-    add_entity(
+    add_attribute_group(
         root,
         "entity_pedido",
-        "Pedido",
-        ["id_pedido", "fecha_pedido", "total", "estado"],
-        330,
-        120,
+        "pedido",
+        [
+            ("id_pedido", 430, 130),
+            ("fecha_pedido", 585, 130),
+            ("total", 430, 410),
+            ("estado", 585, 410),
+        ],
     )
-    add_entity(
+    add_attribute_group(
         root,
         "entity_producto",
-        "Producto",
-        ["id_producto", "nombre", "precio", "stock"],
-        580,
-        120,
+        "producto",
+        [
+            ("id_producto", 790, 130),
+            ("nombre", 945, 130),
+            ("precio", 790, 410),
+            ("stock", 945, 410),
+        ],
     )
-
-    add_edge(root, "edge_cliente_pedido", "1 realiza 0..N", "entity_cliente", "entity_pedido")
-    add_edge(root, "edge_pedido_producto", "1..N contiene 0..N", "entity_pedido", "entity_producto")
 
     return ET.ElementTree(mxfile)
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Create a basic MER .drawio file.")
+    parser = argparse.ArgumentParser(description="Create a basic Chen-style MER .drawio file.")
     parser.add_argument("output", help="Output .drawio path.")
     return parser.parse_args()
 
