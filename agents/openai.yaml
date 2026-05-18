@@ -1,0 +1,4 @@
+interface:
+  display_name: "Draw.io MER"
+  short_description: "Create, edit, and validate MER/MERE draw.io diagrams."
+  default_prompt: "Use $drawio-mer to create or review a MER/MERE diagram in draw.io format."

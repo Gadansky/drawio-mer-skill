@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" agent="drawio-mer-skill" version="24.7.17">
+  <diagram id="mer_ejemplo" name="MER">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="entity_cliente" value="Cliente&lt;br&gt;----------------&lt;br&gt;id_cliente&lt;br&gt;nombre&lt;br&gt;email&lt;br&gt;telefono" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="190" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="entity_pedido" value="Pedido&lt;br&gt;----------------&lt;br&gt;id_pedido&lt;br&gt;fecha_pedido&lt;br&gt;total&lt;br&gt;estado" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="330" y="120" width="190" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="entity_producto" value="Producto&lt;br&gt;----------------&lt;br&gt;id_producto&lt;br&gt;nombre&lt;br&gt;precio&lt;br&gt;stock" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="580" y="120" width="190" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cliente_pedido" value="1 realiza 0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="entity_cliente" target="entity_pedido">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_pedido_producto" value="1..N contiene 0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="entity_pedido" target="entity_producto">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

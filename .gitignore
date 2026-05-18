@@ -1,0 +1,59 @@
+# Python/cache artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Local environments and dependency folders
+.venv/
+venv/
+env/
+node_modules/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+secrets/
+private/
+local/
+
+# Codex/local machine state
+.codex/
+.codex-cache/
+.agents/
+
+# Editor/OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and scratch files
+*.log
+*.tmp
+*.temp
+*.bak
+*.backup
+tmp/
+scratch/
+
+# Archives and generated bundles
+*.zip
+*.tar
+*.tgz
+*.gz
+*.7z
+dist/
+build/
+
+# diagrams.net local backup/temp files
+*.drawio.bkp
+*.drawio.tmp
