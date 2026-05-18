@@ -25,6 +25,10 @@ EDGE_STYLE = (
     "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;"
     "html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;"
 )
+ZONE_STYLE = (
+    "text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;"
+    "whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#334155;"
+)
 
 
 def entity_value(name: str, attributes: list[str], note: str | None = None) -> str:
@@ -87,6 +91,25 @@ def add_relationship(
     )
 
 
+def add_zone_label(root: ET.Element, cell_id: str, value: str, x: int, y: int) -> None:
+    cell = ET.SubElement(
+        root,
+        "mxCell",
+        {
+            "id": cell_id,
+            "value": value,
+            "style": ZONE_STYLE,
+            "vertex": "1",
+            "parent": "1",
+        },
+    )
+    ET.SubElement(
+        cell,
+        "mxGeometry",
+        {"x": str(x), "y": str(y), "width": "260", "height": "40", "as": "geometry"},
+    )
+
+
 def add_edge(
     root: ET.Element,
     cell_id: str,
@@ -135,8 +158,8 @@ def build_diagram() -> ET.ElementTree:
             "fold": "1",
             "page": "1",
             "pageScale": "1",
-            "pageWidth": "1100",
-            "pageHeight": "850",
+            "pageWidth": "2400",
+            "pageHeight": "1600",
             "math": "0",
             "shadow": "0",
         },
@@ -144,6 +167,10 @@ def build_diagram() -> ET.ElementTree:
     root = ET.SubElement(graph, "root")
     ET.SubElement(root, "mxCell", {"id": "0"})
     ET.SubElement(root, "mxCell", {"id": "1", "parent": "0"})
+
+    add_zone_label(root, "zone_comercial", "Zona comercial", 80, 40)
+    add_zone_label(root, "zone_catalogo", "Zona catalogo", 1320, 40)
+    add_zone_label(root, "zone_detalle", "Zona detalle / asociativa", 760, 640)
 
     add_entity(
         root,
@@ -155,8 +182,8 @@ def build_diagram() -> ET.ElementTree:
             "email: varchar(150)",
             "telefono: varchar(20)",
         ],
-        60,
-        90,
+        80,
+        120,
     )
     add_entity(
         root,
@@ -169,8 +196,8 @@ def build_diagram() -> ET.ElementTree:
             "total: decimal(10,2)",
             "estado: varchar(30)",
         ],
-        420,
-        90,
+        650,
+        120,
     )
     add_entity(
         root,
@@ -182,8 +209,8 @@ def build_diagram() -> ET.ElementTree:
             "precio: decimal(10,2)",
             "stock: int",
         ],
-        820,
-        90,
+        1320,
+        120,
     )
     add_entity(
         root,
@@ -195,15 +222,15 @@ def build_diagram() -> ET.ElementTree:
             "cantidad: int",
             "precio_unitario: decimal(10,2)",
         ],
-        520,
-        420,
+        810,
+        760,
         style=ASSOCIATIVE_STYLE,
         note="Entidad asociativa/debil",
     )
 
-    add_relationship(root, "rel_realiza", "realiza", 300, 125)
-    add_relationship(root, "rel_contiene", "contiene", 475, 305)
-    add_relationship(root, "rel_referencia", "referencia", 775, 305)
+    add_relationship(root, "rel_realiza", "realiza", 410, 155)
+    add_relationship(root, "rel_contiene", "contiene", 700, 470)
+    add_relationship(root, "rel_referencia", "referencia", 1190, 470)
 
     add_edge(root, "edge_cliente_realiza", "1", "entity_cliente", "rel_realiza")
     add_edge(root, "edge_realiza_pedido", "0..N", "rel_realiza", "entity_pedido")

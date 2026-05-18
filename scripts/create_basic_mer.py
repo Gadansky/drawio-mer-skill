@@ -96,7 +96,7 @@ def add_attribute_group(
 ) -> None:
     for index, (attribute, x, y) in enumerate(attributes, start=1):
         attr_id = f"attr_{entity_key}_{attribute}"
-        add_vertex(root, attr_id, attribute, ATTRIBUTE_STYLE, x, y, 130, 46)
+        add_vertex(root, attr_id, attribute, ATTRIBUTE_STYLE, x, y, 120, 45)
         add_edge(
             root,
             f"edge_{entity_key}_attr_{index}",
@@ -132,8 +132,8 @@ def build_diagram() -> ET.ElementTree:
             "fold": "1",
             "page": "1",
             "pageScale": "1",
-            "pageWidth": "1100",
-            "pageHeight": "850",
+            "pageWidth": "1600",
+            "pageHeight": "1000",
             "math": "0",
             "shadow": "0",
         },
@@ -142,12 +142,12 @@ def build_diagram() -> ET.ElementTree:
     ET.SubElement(root, "mxCell", {"id": "0"})
     ET.SubElement(root, "mxCell", {"id": "1", "parent": "0"})
 
-    add_vertex(root, "entity_cliente", "Cliente", ENTITY_STYLE, 120, 280, 130, 55)
-    add_vertex(root, "entity_pedido", "Pedido", ENTITY_STYLE, 480, 280, 130, 55)
-    add_vertex(root, "entity_producto", "Producto", ENTITY_STYLE, 840, 280, 130, 55)
+    add_vertex(root, "entity_cliente", "Cliente", ENTITY_STYLE, 120, 280, 140, 50)
+    add_vertex(root, "entity_pedido", "Pedido", ENTITY_STYLE, 500, 280, 140, 50)
+    add_vertex(root, "entity_producto", "Producto", ENTITY_STYLE, 880, 280, 140, 50)
 
-    add_vertex(root, "rel_realiza", "realiza", RELATIONSHIP_STYLE, 315, 270, 110, 75)
-    add_vertex(root, "rel_contiene", "contiene", RELATIONSHIP_STYLE, 675, 270, 110, 75)
+    add_vertex(root, "rel_realiza", "realiza", RELATIONSHIP_STYLE, 320, 270, 120, 70)
+    add_vertex(root, "rel_contiene", "contiene", RELATIONSHIP_STYLE, 700, 270, 120, 70)
 
     add_edge(root, "edge_cliente_realiza", "1", "entity_cliente", "rel_realiza")
     add_edge(root, "edge_realiza_pedido", "0..N", "rel_realiza", "entity_pedido")
@@ -161,8 +161,8 @@ def build_diagram() -> ET.ElementTree:
         [
             ("id_cliente", 70, 130),
             ("nombre", 220, 130),
-            ("email", 55, 410),
-            ("telefono", 215, 410),
+            ("email", 70, 430),
+            ("telefono", 220, 430),
         ],
     )
     add_attribute_group(
@@ -170,10 +170,10 @@ def build_diagram() -> ET.ElementTree:
         "entity_pedido",
         "pedido",
         [
-            ("id_pedido", 430, 130),
-            ("fecha_pedido", 585, 130),
-            ("total", 430, 410),
-            ("estado", 585, 410),
+            ("id_pedido", 450, 130),
+            ("fecha_pedido", 600, 130),
+            ("total", 450, 430),
+            ("estado", 600, 430),
         ],
     )
     add_attribute_group(
@@ -181,10 +181,10 @@ def build_diagram() -> ET.ElementTree:
         "entity_producto",
         "producto",
         [
-            ("id_producto", 790, 130),
-            ("nombre", 945, 130),
-            ("precio", 790, 410),
-            ("stock", 945, 410),
+            ("id_producto", 830, 130),
+            ("nombre", 980, 130),
+            ("precio", 830, 430),
+            ("stock", 980, 430),
         ],
     )
 

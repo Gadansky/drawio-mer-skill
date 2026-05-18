@@ -172,6 +172,36 @@ MER relationship example:
 </mxCell>
 ```
 
+## Layout Rules
+
+Use a geometric layout plan before writing XML. For medium diagrams, start with a minimum canvas of `2400 x 1600 px`; this is a baseline, not a maximum.
+
+Required layout process:
+
+1. Plan a node table before writing XML with `id`, `type`, `x`, `y`, `width`, `height`, and `zone`.
+2. Use a grid and functional zones/modules instead of improvised coordinates.
+3. Increase `pageWidth`, `pageHeight`, `dx`, and `dy` when the node count grows.
+4. Split large databases into multiple pages when one page becomes illegible.
+5. Prefer pages such as overview, sales, users/permissions, production, audit/tracing, and notifications when the domain is large.
+
+Minimum spacing:
+
+- Keep at least `120 px` horizontal separation between entities and relationship diamonds.
+- Keep at least `100 px` vertical separation between entities and relationship diamonds.
+- Keep at least `60 px` separation between attribute ovals.
+- Do not place relationships on top of entities.
+- Do not place attributes on top of entities.
+- Do not place cardinality labels on top of nodes.
+- Place relationship diamonds between the participating entities.
+- Use orthogonal connectors whenever possible.
+
+Recommended visual sizes:
+
+- MER entity rectangle: `140 x 50`.
+- MER attribute oval: `120 x 45`.
+- MER relationship diamond: `120 x 70`.
+- MERE entity/table block: `180-260 px` wide, variable height based on attributes.
+
 ## Visual Conventions
 
 MER:
@@ -241,24 +271,28 @@ To create a MER:
 2. Identify attributes.
 3. Identify relationships.
 4. Determine cardinalities.
-5. Create entity rectangles with names only.
-6. Create attribute ovals and connect them to entities.
-7. Create relationship diamonds and connect them to entities.
-8. Add cardinality labels on entity-to-relationship connectors.
-9. Arrange the diagram.
-10. Validate in MER mode.
+5. Group entities by functional zone.
+6. Plan the node table with coordinates and dimensions.
+7. Create entity rectangles with names only.
+8. Create attribute ovals and connect them to entities.
+9. Create relationship diamonds and connect them to entities.
+10. Add cardinality labels on entity-to-relationship connectors.
+11. Expand canvas or split pages if needed.
+12. Validate in MER mode, and use `--check-layout` for visual overlap checks.
 
 To create a MERE:
 
 1. Identify entities and attributes.
 2. Identify extended elements.
-3. Add weak/associative entities if needed.
-4. Add relationships and cardinalities.
-5. Add inheritance/specialization/generalization if needed.
-6. Add ternary relationships if needed.
-7. Add data types when appropriate.
-8. Arrange the diagram.
-9. Validate in MERE mode.
+3. Group entities by functional zone.
+4. Plan the node table with coordinates and dimensions.
+5. Add weak/associative entities if needed.
+6. Add relationships and cardinalities.
+7. Add inheritance/specialization/generalization if needed.
+8. Add ternary relationships if needed.
+9. Add data types when appropriate.
+10. Expand canvas or split pages if needed.
+11. Validate in MERE mode, and use `--check-layout` for visual overlap checks.
 
 To modify an existing file:
 
@@ -288,6 +322,9 @@ Before returning a `.drawio` file, check:
 - MER relationships are diamonds/rhombi connected to entities.
 - MER has no data types.
 - MERE may include internal attributes and data types.
+- Visual vertices have `mxGeometry` with `x`, `y`, `width`, and `height`.
+- Visible nodes do not overlap unless explicitly justified with `ignoreLayoutOverlap=1` in style.
+- The canvas is large enough for the number of nodes, or the model is split into pages.
 
 ## Included Scripts
 

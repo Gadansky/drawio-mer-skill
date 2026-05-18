@@ -61,6 +61,8 @@ The skill entrypoint is `SKILL.md`.
 
 ## Scripts
 
+Generate readable diagrams by planning zones first. For medium diagrams, use at least a `2400 x 1600` canvas. For large databases, expand the canvas or split the model into pages by module, for example overview, sales, users/permissions, production, audit/tracing, and notifications.
+
 Generate a basic Chen-style MER example:
 
 ```powershell
@@ -84,6 +86,21 @@ Validate a MERE diagram:
 ```powershell
 python scripts/validate_drawio_mer.py examples/mere_ejemplo.drawio --mode mere
 ```
+
+Run visual layout validation:
+
+```powershell
+python scripts/validate_drawio_mer.py examples/mer_ejemplo.drawio --mode mer --check-layout
+python scripts/validate_drawio_mer.py examples/mere_ejemplo.drawio --mode mere --check-layout
+```
+
+Test the negative overlap fixture:
+
+```powershell
+python scripts/validate_drawio_mer.py examples/overlap_invalid.drawio --mode mer --check-layout
+```
+
+`--check-layout` reports vertex geometry, estimated canvas size, and visual overlaps. Overlaps are warnings, not critical XML errors.
 
 The skill scripts use only Python standard library modules.
 

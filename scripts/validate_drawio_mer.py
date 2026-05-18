@@ -8,6 +8,7 @@ import html
 import re
 import sys
 from collections import Counter
+from dataclasses import dataclass
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -44,6 +45,23 @@ TYPE_PATTERN = re.compile(
 )
 
 
+@dataclass(frozen=True)
+class BoundingBox:
+    cell_id: str
+    x: float
+    y: float
+    width: float
+    height: float
+
+    @property
+    def right(self) -> float:
+        return self.x + self.width
+
+    @property
+    def bottom(self) -> float:
+        return self.y + self.height
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Validate a draw.io MER/MERE XML file.",
@@ -53,6 +71,11 @@ def parse_args() -> argparse.Namespace:
         "--mode",
         choices=("mer", "mere"),
         help="Diagram mode. MER warns on data types; MERE allows them.",
+    )
+    parser.add_argument(
+        "--check-layout",
+        action="store_true",
+        help="Check vertex geometry, estimated canvas, and visual overlaps.",
     )
     return parser.parse_args()
 
@@ -80,6 +103,26 @@ def find_mxcells(root: ET.Element) -> list[ET.Element]:
     return [element for element in root.iter() if local_name(element.tag) == "mxCell"]
 
 
+def find_graph_models(root: ET.Element) -> list[ET.Element]:
+    return [element for element in root.iter() if local_name(element.tag) == "mxGraphModel"]
+
+
+def find_geometry(cell: ET.Element) -> ET.Element | None:
+    for child in cell:
+        if local_name(child.tag) == "mxGeometry":
+            return child
+    return None
+
+
+def parse_float(value: str | None) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except ValueError:
+        return None
+
+
 def visible_value(cell: ET.Element) -> str:
     value = cell.get("value") or ""
     value = html.unescape(value)
@@ -103,6 +146,10 @@ def is_attribute_oval(cell: ET.Element) -> bool:
 def is_relationship_diamond(cell: ET.Element) -> bool:
     style = cell_style(cell)
     return cell.get("vertex") == "1" and ("rhombus" in style or "shape=rhombus" in style)
+
+
+def ignores_layout_overlap(cell: ET.Element) -> bool:
+    return "ignorelayoutoverlap=1" in cell_style(cell)
 
 
 def has_internal_attribute_list(cell: ET.Element) -> bool:
@@ -160,6 +207,83 @@ def collect_mer_notation_warnings(cells: list[ET.Element]) -> list[str]:
     return warnings
 
 
+def collect_layout_warnings(
+    cells: list[ET.Element],
+    graph_models: list[ET.Element],
+) -> tuple[list[str], dict[str, object]]:
+    warnings: list[str] = []
+    vertex_cells = [cell for cell in cells if cell.get("vertex") == "1"]
+    cell_by_id = {cell.get("id", ""): cell for cell in vertex_cells if cell.get("id")}
+    boxes: list[BoundingBox] = []
+    missing_geometry: list[str] = []
+
+    for cell in vertex_cells:
+        cell_id = cell.get("id", "(no id)")
+        geometry = find_geometry(cell)
+        if geometry is None:
+            missing_geometry.append(cell_id)
+            continue
+
+        values = {
+            "x": parse_float(geometry.get("x")),
+            "y": parse_float(geometry.get("y")),
+            "width": parse_float(geometry.get("width")),
+            "height": parse_float(geometry.get("height")),
+        }
+        if any(value is None for value in values.values()):
+            missing_geometry.append(cell_id)
+            continue
+
+        boxes.append(
+            BoundingBox(
+                cell_id=cell_id,
+                x=values["x"] or 0.0,
+                y=values["y"] or 0.0,
+                width=values["width"] or 0.0,
+                height=values["height"] or 0.0,
+            )
+        )
+
+    overlaps: list[tuple[str, str]] = []
+    for index, left in enumerate(boxes):
+        left_cell = cell_by_id.get(left.cell_id)
+        if left_cell is not None and ignores_layout_overlap(left_cell):
+            continue
+        for right in boxes[index + 1 :]:
+            right_cell = cell_by_id.get(right.cell_id)
+            if right_cell is not None and ignores_layout_overlap(right_cell):
+                continue
+            if boxes_overlap(left, right):
+                overlaps.append((left.cell_id, right.cell_id))
+
+    for cell_id in missing_geometry:
+        warnings.append(f"Visible vertex missing complete geometry: {cell_id}")
+
+    for left_id, right_id in overlaps:
+        warnings.append(f"Visual overlap detected: {left_id} overlaps {right_id}")
+
+    max_right = max((box.right for box in boxes), default=0.0)
+    max_bottom = max((box.bottom for box in boxes), default=0.0)
+    page_width = max((parse_float(model.get("pageWidth")) or 0.0 for model in graph_models), default=0.0)
+    page_height = max((parse_float(model.get("pageHeight")) or 0.0 for model in graph_models), default=0.0)
+    dx = max((parse_float(model.get("dx")) or 0.0 for model in graph_models), default=0.0)
+    dy = max((parse_float(model.get("dy")) or 0.0 for model in graph_models), default=0.0)
+
+    summary = {
+        "nodes_with_geometry": len(boxes),
+        "nodes_without_geometry": len(missing_geometry),
+        "overlaps": len(overlaps),
+        "estimated_canvas": (round(max_right), round(max_bottom)),
+        "page_canvas": (round(page_width), round(page_height)),
+        "viewport": (round(dx), round(dy)),
+    }
+    return warnings, summary
+
+
+def boxes_overlap(left: BoundingBox, right: BoundingBox) -> bool:
+    return left.x < right.right and left.right > right.x and left.y < right.bottom and left.bottom > right.y
+
+
 def collect_cardinality_warnings(cells: list[ET.Element]) -> list[str]:
     warnings: list[str] = []
     for cell in cells:
@@ -175,7 +299,7 @@ def collect_cardinality_warnings(cells: list[ET.Element]) -> list[str]:
     return warnings
 
 
-def validate(path: Path, mode: str) -> tuple[list[str], list[str], dict[str, int]]:
+def validate(path: Path, mode: str, check_layout: bool = False) -> tuple[list[str], list[str], dict[str, object]]:
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -188,6 +312,7 @@ def validate(path: Path, mode: str) -> tuple[list[str], list[str], dict[str, int
 
     root = tree.getroot()
     cells = find_mxcells(root)
+    graph_models = find_graph_models(root)
     ids = [cell.get("id") for cell in cells if cell.get("id")]
     id_set = set(ids)
     duplicate_ids = sorted(cell_id for cell_id, count in Counter(ids).items() if count > 1)
@@ -233,6 +358,11 @@ def validate(path: Path, mode: str) -> tuple[list[str], list[str], dict[str, int
     if mode == "mer":
         warnings.extend(collect_mer_notation_warnings(cells))
 
+    layout_summary: dict[str, object] = {}
+    if check_layout:
+        layout_warnings, layout_summary = collect_layout_warnings(cells, graph_models)
+        warnings.extend(layout_warnings)
+
     summary = {
         "mx_cells": len(cells),
         "vertices": vertex_count,
@@ -242,6 +372,7 @@ def validate(path: Path, mode: str) -> tuple[list[str], list[str], dict[str, int
         "warnings": len(warnings),
         "errors": len(errors),
     }
+    summary.update(layout_summary)
     return errors, warnings, summary
 
 
@@ -250,7 +381,7 @@ def main() -> int:
     path = Path(args.path)
     mode, mode_warnings = infer_mode(path, args.mode)
 
-    errors, warnings, summary = validate(path, mode)
+    errors, warnings, summary = validate(path, mode, args.check_layout)
     warnings = mode_warnings + warnings
 
     print("draw.io MER/MERE validation")
@@ -264,6 +395,16 @@ def main() -> int:
         if mode == "mer":
             print(f"Attribute ovals: {summary['attribute_ovals']}")
             print(f"Relationship diamonds: {summary['relationship_diamonds']}")
+        if args.check_layout:
+            estimated_width, estimated_height = summary["estimated_canvas"]
+            page_width, page_height = summary["page_canvas"]
+            viewport_width, viewport_height = summary["viewport"]
+            print(f"Nodes with geometry: {summary['nodes_with_geometry']}")
+            print(f"Nodes without geometry: {summary['nodes_without_geometry']}")
+            print(f"Visual overlaps: {summary['overlaps']}")
+            print(f"Estimated canvas: {estimated_width} x {estimated_height}")
+            print(f"Page canvas: {page_width} x {page_height}")
+            print(f"Viewport: {viewport_width} x {viewport_height}")
 
     if warnings:
         print("\nWarnings:")

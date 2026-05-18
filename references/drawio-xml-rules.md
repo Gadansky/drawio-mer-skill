@@ -66,6 +66,29 @@ Example:
 </mxCell>
 ```
 
+## mxGeometry and Layout
+
+Every visible vertex must have an `mxGeometry` child with:
+
+- `x`
+- `y`
+- `width`
+- `height`
+- `as="geometry"`
+
+Visible nodes must not share overlapping bounding boxes. Attribute ovals, relationship diamonds, entity rectangles, MERE table blocks, and notes should all have explicit non-overlapping geometry unless the overlap is intentionally marked with `ignoreLayoutOverlap=1` in the cell style.
+
+Labels and cardinalities should be placed outside entity rectangles, attribute ovals, relationship diamonds, and MERE blocks.
+
+Recommended sizes:
+
+- MER entity rectangle: `140 x 50`.
+- MER attribute oval: `120 x 45`.
+- MER relationship diamond: `120 x 70`.
+- MERE entity/table block: `180-260 px` wide, variable height based on attributes.
+
+For medium diagrams, use at least `2400 x 1600 px` canvas. This is a minimum baseline, not a maximum. For large relational databases, expand the canvas or split the diagram into multiple pages by module.
+
 ## Validation
 
 Check:
@@ -82,3 +105,6 @@ Check:
 - In MER, relationship diamonds exist.
 - In MER, data types are absent.
 - In MERE, data types and internal attributes are allowed.
+- With layout validation enabled, every visible vertex has geometry.
+- With layout validation enabled, visual nodes do not overlap.
+- With layout validation enabled, estimated canvas size is reported.
