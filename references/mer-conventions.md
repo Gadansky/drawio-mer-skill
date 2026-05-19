@@ -90,6 +90,14 @@ Must include:
 
 Must not include internal entity attributes or data types.
 
+For relational-design readiness, also check:
+
+- Every entity has an identifier candidate, usually an attribute like `id_entidad`, `codigo`, `numero`, or a clearly named natural key.
+- Every relationship has cardinality and optionality on both participating entity sides.
+- Direct M:N relationships are allowed in conceptual MER.
+- M:N relationships with own attributes, lifecycle, or transactional meaning should be modeled as an associative entity.
+- Weak or dependent entities should be visually distinguished and tied to their identifying relationship.
+
 ## MERE
 
 May include:

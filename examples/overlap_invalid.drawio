@@ -8,8 +8,11 @@
         <mxCell id="entity_cliente" value="Cliente" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=14;strokeColor=#334155;fillColor=#f8fafc;" vertex="1" parent="1">
           <mxGeometry x="100" y="100" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="attr_cliente_nombre" value="nombre" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
+        <mxCell id="attr_cliente_id_cliente" value="id_cliente" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="120" y="110" width="120" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="attr_pedido_id_pedido" value="id_pedido" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="530" y="220" width="120" height="45" as="geometry" />
         </mxCell>
         <mxCell id="rel_realiza" value="realiza" style="rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#fff7ed;" vertex="1" parent="1">
           <mxGeometry x="320" y="90" width="120" height="70" as="geometry" />
@@ -17,7 +20,10 @@
         <mxCell id="entity_pedido" value="Pedido" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=14;strokeColor=#334155;fillColor=#f8fafc;" vertex="1" parent="1">
           <mxGeometry x="520" y="100" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="edge_cliente_attr_nombre" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_cliente_nombre" target="entity_cliente">
+        <mxCell id="edge_cliente_attr_nombre" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_cliente_id_cliente" target="entity_cliente">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_pedido_attr_id" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_pedido_id_pedido" target="entity_pedido">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="edge_cliente_realiza" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;ignoreRouteCrossing=1;" edge="1" parent="1" source="entity_cliente" target="rel_realiza">

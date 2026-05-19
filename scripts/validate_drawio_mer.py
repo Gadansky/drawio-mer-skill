@@ -14,6 +14,16 @@ from xml.etree import ElementTree as ET
 
 
 ALLOWED_CARDINALITIES = {"1", "0..1", "1..N", "0..N"}
+MANY_CARDINALITIES = {"1..N", "0..N"}
+IDENTIFIER_PATTERN = re.compile(
+    r"(?i)(?:^id[_-]|[_-]id$|^codigo$|^c[oó]digo$|^numero$|^n[uú]mero$|^rut$|^email$)"
+)
+RELATIONSHIP_ATTRIBUTE_HINT_PATTERN = re.compile(
+    r"(?i)(fecha|estado|nota|monto|precio|cantidad|total|rol|vigencia|hora|periodo|descuento|comision|observacion)"
+)
+TRANSACTIONAL_RELATIONSHIP_PATTERN = re.compile(
+    r"(?i)(inscribe|inscripcion|matricula|compra|vende|venta|paga|pago|contrata|reserva|arrienda|presta|asigna|participa)"
+)
 
 CARDINALITY_PATTERN = re.compile(
     r"(?<![\w.])(?:0\.\.[A-Za-z0-9]+|1\.\.[A-Za-z0-9]+|[MN]\.\.[MN]|[MN]:[MN]|[01]:[MN]|[MN]:[01])(?!(?:[\w.]))",
@@ -213,6 +223,104 @@ def collect_mer_notation_warnings(cells: list[ET.Element]) -> list[str]:
         )
 
     return warnings
+
+
+def collect_relational_readiness_warnings(cells: list[ET.Element]) -> list[str]:
+    warnings: list[str] = []
+    cell_by_id = {cell.get("id", ""): cell for cell in cells if cell.get("id")}
+    entity_cells = [
+        cell
+        for cell in cells
+        if cell.get("vertex") == "1" and (cell.get("id") or "").startswith("entity_")
+    ]
+    relationship_cells = [
+        cell
+        for cell in cells
+        if cell.get("vertex") == "1"
+        and (cell.get("id") or "").startswith("rel_")
+        and is_relationship_diamond(cell)
+    ]
+    edge_cells = [cell for cell in cells if cell.get("edge") == "1"]
+
+    connected_attributes: dict[str, list[ET.Element]] = {cell.get("id", ""): [] for cell in entity_cells + relationship_cells}
+    relationship_edges: dict[str, list[ET.Element]] = {cell.get("id", ""): [] for cell in relationship_cells}
+
+    for edge in edge_cells:
+        source_id = edge.get("source")
+        target_id = edge.get("target")
+        source = cell_by_id.get(source_id or "")
+        target = cell_by_id.get(target_id or "")
+
+        if source is not None and target_id in connected_attributes and is_attribute_oval(source):
+            connected_attributes[target_id or ""].append(source)
+        if target is not None and source_id in connected_attributes and is_attribute_oval(target):
+            connected_attributes[source_id or ""].append(target)
+
+        if source_id in relationship_edges:
+            relationship_edges[source_id or ""].append(edge)
+        if target_id in relationship_edges:
+            relationship_edges[target_id or ""].append(edge)
+
+    for entity in entity_cells:
+        entity_id = entity.get("id", "(no id)")
+        attributes = connected_attributes.get(entity.get("id", ""), [])
+        if not attributes or not any(is_identifier_attribute(attribute) for attribute in attributes):
+            entity_name = visible_value(entity).strip() or entity_id
+            warnings.append(
+                f"Relational readiness: entity {entity_name} ({entity_id}) has no recognizable identifier attribute."
+            )
+
+    for relationship in relationship_cells:
+        relationship_id = relationship.get("id", "(no id)")
+        relationship_name = visible_value(relationship).strip() or relationship_id
+        entity_edges = [
+            edge
+            for edge in relationship_edges.get(relationship.get("id", ""), [])
+            if edge_connects_relationship_to_entity(edge, relationship.get("id", ""), cell_by_id)
+        ]
+        cardinalities = [visible_value(edge).strip().upper() for edge in entity_edges if visible_value(edge).strip()]
+
+        if len(entity_edges) >= 2 and len(cardinalities) < len(entity_edges):
+            warnings.append(
+                f"Relational readiness: relationship {relationship_name} ({relationship_id}) is missing cardinality on one or more entity sides."
+            )
+
+        relationship_attributes = connected_attributes.get(relationship.get("id", ""), [])
+        many_sides = sum(1 for cardinality in cardinalities if cardinality in MANY_CARDINALITIES)
+        if many_sides >= 2 and relationship_attributes:
+            attribute_names = ", ".join(visible_value(attribute).strip() for attribute in relationship_attributes)
+            warnings.append(
+                f"Relational readiness: M:N relationship {relationship_name} ({relationship_id}) has own attributes ({attribute_names}); model it as an associative entity."
+            )
+        elif many_sides >= 2 and TRANSACTIONAL_RELATIONSHIP_PATTERN.search(relationship_name):
+            warnings.append(
+                f"Relational readiness: M:N relationship {relationship_name} ({relationship_id}) sounds transactional; verify whether it needs an associative entity if it has its own attributes or lifecycle."
+            )
+
+        if relationship_attributes:
+            attribute_values = " ".join(visible_value(attribute) for attribute in relationship_attributes)
+            if RELATIONSHIP_ATTRIBUTE_HINT_PATTERN.search(attribute_values) and many_sides < 2:
+                warnings.append(
+                    f"Relational readiness: relationship {relationship_name} ({relationship_id}) has attributes; verify whether it should be modeled as an associative or dependent entity."
+                )
+
+    return warnings
+
+
+def is_identifier_attribute(cell: ET.Element) -> bool:
+    return bool(IDENTIFIER_PATTERN.search(visible_value(cell).strip()))
+
+
+def edge_connects_relationship_to_entity(
+    edge: ET.Element,
+    relationship_id: str,
+    cell_by_id: dict[str, ET.Element],
+) -> bool:
+    source_id = edge.get("source") or ""
+    target_id = edge.get("target") or ""
+    other_id = target_id if source_id == relationship_id else source_id
+    other = cell_by_id.get(other_id)
+    return other is not None and (other.get("id") or "").startswith("entity_")
 
 
 def collect_layout_warnings(
@@ -514,6 +622,7 @@ def validate(path: Path, mode: str, check_layout: bool = False) -> tuple[list[st
     warnings.extend(collect_type_warnings(cells, mode))
     if mode == "mer":
         warnings.extend(collect_mer_notation_warnings(cells))
+        warnings.extend(collect_relational_readiness_warnings(cells))
 
     layout_summary: dict[str, object] = {}
     if check_layout:

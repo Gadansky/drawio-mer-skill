@@ -27,7 +27,7 @@ Use this skill when the user asks to:
 - Convert a domain description into an entity-relationship diagram.
 - Add or correct entities, attributes, relationships, or cardinalities.
 - Add weak entities, associative entities, composite/multivalued/derived attributes, inheritance, specialization/generalization, or ternary relationships.
-- Validate draw.io XML or review consistency between entities, attributes, relationships, and cardinalities.
+- Validate draw.io XML or review consistency between entities, attributes, relationships, cardinalities, identifiers, optionality, and readiness for relational design.
 
 ## MER Rules
 
@@ -122,6 +122,22 @@ telefono: varchar(20)
 - If the user asks for data types in a MER, explain that the course MER notation does not include them and offer MERE or a logical/relational model instead.
 - Do not add data types in MER.
 - Allow data types in MERE.
+- A conceptual MER may show a direct M:N relationship with a diamond.
+- A MER ready for relational design must convert an M:N relationship into an associative entity when the relationship has its own attributes, meaningful lifecycle, or transactional identity.
+- The logical/relational model is separate from the MER; mention likely tables, PKs, and FKs only as warnings or notes unless the user asks for that model.
+
+## Pre-Diagram Completeness Check
+
+Before generating or finalizing a MER intended for relational design, check whether the domain has enough information. Do not silently invent missing concepts. If information is missing, state it as a pending question or explicit assumption.
+
+Report:
+
+- Confirmed concepts: entities, attributes, relationships, identifiers, cardinalities, optionality, and business rules that are clear.
+- Missing concepts: entities without identifiers, relationships without cardinality or optionality, ambiguous attributes, unresolved weak/dependent entities, and M:N relationships that may need an associative entity.
+- Assumptions used: any inferred entity, cardinality, identifier, optionality, relationship name, or associative entity.
+- Pending questions: the minimum questions needed to close the MER.
+
+Read `references/relational-readiness.md` when the user asks for a MER suitable for database design, relational design, model review, normalization preparation, or conceptual completeness.
 
 ## XML Requirements
 
@@ -282,14 +298,17 @@ To create a MER:
 2. Identify attributes.
 3. Identify relationships.
 4. Determine cardinalities.
-5. Group entities by functional zone.
-6. Plan the node table with coordinates and dimensions.
-7. Create entity rectangles with names only.
-8. Create attribute ovals and connect them to entities.
-9. Create relationship diamonds and connect them to entities.
-10. Add cardinality labels on entity-to-relationship connectors.
-11. Expand canvas or split pages if needed.
-12. Validate in MER mode, and use `--check-layout` for visual overlap and edge route checks.
+5. Determine optionality on each side of every relationship.
+6. Identify candidate identifiers for every entity.
+7. Check whether M:N relationships have own attributes or lifecycle; if yes, model an associative entity.
+8. Group entities by functional zone.
+9. Plan the node table with coordinates and dimensions.
+10. Create entity rectangles with names only.
+11. Create attribute ovals and connect them to entities.
+12. Create relationship diamonds and connect them to entities.
+13. Add cardinality labels on entity-to-relationship connectors.
+14. Expand canvas or split pages if needed.
+15. Validate in MER mode, and use `--check-layout` for visual overlap and edge route checks.
 
 To create a MERE:
 
@@ -333,6 +352,10 @@ Before returning a `.drawio` file, check:
 - MER relationships are diamonds/rhombi connected to entities.
 - MER has no data types.
 - MERE may include internal attributes and data types.
+- Every entity has a recognizable identifier or an explicit warning explaining what identifier is missing.
+- Every relationship has visible cardinality on each entity side.
+- M:N relationships with attributes are represented as associative entities.
+- Weak/dependent entities are visually distinguished or flagged as unresolved.
 - Visual vertices have `mxGeometry` with `x`, `y`, `width`, and `height`.
 - Visible nodes do not overlap unless explicitly justified with `ignoreLayoutOverlap=1` in style.
 - Edge routes do not cross visible node bounding boxes unless explicitly justified with `ignoreRouteCrossing=1` in the edge style.
@@ -353,5 +376,9 @@ When creating or modifying a MER/MERE, respond with:
 3. Entity summary.
 4. Attribute summary.
 5. Relationship summary.
-6. Validations performed.
-7. Warnings or inconsistencies, if any.
+6. Ready to diagram or finalize: yes/no.
+7. Missing concepts needed to close the MER.
+8. Assumptions applied.
+9. Relational design impact.
+10. Validations performed.
+11. Warnings or inconsistencies, if any.

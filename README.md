@@ -8,6 +8,7 @@ Codex skill for creating, editing, validating, and reviewing MER/MERE diagrams i
 - Uses uncompressed, versionable XML.
 - Supports MER course notation using classic Chen-style shapes.
 - Supports MERE / EER notation using extended blocks, internal attributes, and data types when appropriate.
+- Warns about MER completeness issues before relational design, such as missing identifiers, missing cardinalities, and M:N relationships with own attributes.
 - Provides Python scripts to generate and validate sample diagrams.
 
 ## MER vs MERE
@@ -97,6 +98,17 @@ python scripts/validate_drawio_mer.py examples/mere_ejemplo.drawio --mode mere -
 ```
 
 `--check-layout` reports vertex geometry, estimated canvas size, visual overlaps, and edge route crossings. Overlaps and route crossings are warnings, not critical XML errors.
+
+Run relational-readiness validation:
+
+```powershell
+python scripts/validate_drawio_mer.py examples/mer_ejemplo.drawio --mode mer
+python scripts/validate_drawio_mer.py examples/readiness_many_to_many_with_attribute.drawio --mode mer
+python scripts/validate_drawio_mer.py examples/readiness_missing_identifier.drawio --mode mer
+python scripts/validate_drawio_mer.py examples/readiness_missing_cardinality.drawio --mode mer
+```
+
+Readiness warnings are not critical XML errors. They identify concepts to close before using the MER as input for relational database design.
 
 Test the negative overlap fixture:
 
