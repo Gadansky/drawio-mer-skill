@@ -16,10 +16,7 @@ from xml.etree import ElementTree as ET
 ALLOWED_CARDINALITIES = {"1", "0..1", "1..N", "0..N"}
 MANY_CARDINALITIES = {"1..N", "0..N"}
 IDENTIFIER_PATTERN = re.compile(
-    r"(?i)(?:^id[_-]|[_-]id$|(?:^|[_-])codigo(?:[_-]|$)|(?:^|[_-])c[oó]digo(?:[_-]|$)|(?:^|[_-])numero(?:[_-]|$)|(?:^|[_-])n[uú]mero(?:[_-]|$)|^rut$|^email$)"
-)
-RELATIONSHIP_ATTRIBUTE_HINT_PATTERN = re.compile(
-    r"(?i)(fecha|estado|nota|monto|precio|cantidad|total|rol|vigencia|hora|periodo|descuento|comision|observacion)"
+    r"(?i)(?:^id[_-]|[_-]id$|(?:^|[_-])codigo(?:[_-]|$)|(?:^|[_-])numero(?:[_-]|$)|(?:^|[_-])rut(?:[_-]|$)|^email$)"
 )
 TRANSACTIONAL_RELATIONSHIP_PATTERN = re.compile(
     r"(?i)(inscribe|inscripcion|matricula|compra|vende|venta|paga|pago|contrata|reserva|arrienda|presta|asigna|participa)"
@@ -54,6 +51,27 @@ TYPE_PATTERN = re.compile(
     r"(?=$|[\s<>\n\r;|])",
 )
 
+LOGICAL_MARKER_PATTERNS = (
+    (
+        "PK/FK marker",
+        re.compile(r"(?i)(?:\bPK\b|\bFK\b|\bPRIMARY\s+KEY\b|\bFOREIGN\s+KEY\b)"),
+    ),
+    (
+        "SQL syntax",
+        re.compile(
+            r"(?i)(?:\bCREATE\s+TABLE\b|\bALTER\s+TABLE\b|\bREFERENCES\b|\bNOT\s+NULL\b)"
+        ),
+    ),
+    (
+        "field size or physical type",
+        re.compile(
+            r"(?i)(?:\bvarchar\s*\(\s*\d+\s*\)|\bchar\s*\(\s*\d+\s*\)|"
+            r"\bdecimal\s*\(\s*\d+\s*,\s*\d+\s*\)|\bnumeric\s*\(\s*\d+\s*,\s*\d+\s*\))"
+            r"|\bint(?:eger)?\b|\bdate\b|\bdatetime\b|\btimestamp\b|\bboolean\b|\bbool\b|\bfloat\b|\bdouble\b|\btext\b"
+        ),
+    ),
+)
+
 
 @dataclass(frozen=True)
 class BoundingBox:
@@ -84,7 +102,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--mode",
         choices=("mer", "mere"),
-        help="Diagram mode. MER warns on data types; MERE allows them.",
+        help="Conceptual diagram mode. MER and MERE warn on logical/relational artifacts.",
     )
     parser.add_argument(
         "--check-layout",
@@ -166,6 +184,14 @@ def is_relationship_diamond(cell: ET.Element) -> bool:
     return cell.get("vertex") == "1" and ("rhombus" in style or "shape=rhombus" in style)
 
 
+def is_compact_attribute_block(cell: ET.Element) -> bool:
+    cell_id = cell.get("id") or ""
+    return (
+        cell.get("vertex") == "1"
+        and (cell_id.startswith("attrs_") or "drawiomercompactattrs=1" in cell_style(cell))
+    )
+
+
 def ignores_layout_overlap(cell: ET.Element) -> bool:
     return "ignorelayoutoverlap=1" in cell_style(cell)
 
@@ -182,9 +208,6 @@ def has_internal_attribute_list(cell: ET.Element) -> bool:
 
 
 def collect_type_warnings(cells: list[ET.Element], mode: str) -> list[str]:
-    if mode == "mere":
-        return []
-
     warnings: list[str] = []
     for cell in cells:
         value = visible_value(cell)
@@ -193,12 +216,30 @@ def collect_type_warnings(cells: list[ET.Element], mode: str) -> list[str]:
             cell_id = cell.get("id", "(no id)")
             joined = ", ".join(sorted(set(matches)))
             warnings.append(
-                f"Data types detected in MER mode in mxCell {cell_id}: {joined}"
+                f"Data types detected in {mode.upper()} conceptual mode in mxCell {cell_id}: {joined}"
             )
     return warnings
 
 
-def collect_mer_notation_warnings(cells: list[ET.Element]) -> list[str]:
+def collect_logical_marker_warnings(cells: list[ET.Element], mode: str) -> list[str]:
+    warnings: list[str] = []
+    for cell in cells:
+        value = visible_value(cell)
+        marker_names = [
+            name
+            for name, pattern in LOGICAL_MARKER_PATTERNS
+            if pattern.search(value)
+        ]
+        if marker_names:
+            cell_id = cell.get("id", "(no id)")
+            joined = ", ".join(marker_names)
+            warnings.append(
+                f"Logical/relational artifact detected in {mode.upper()} conceptual mode in mxCell {cell_id}: {joined}"
+            )
+    return warnings
+
+
+def collect_conceptual_notation_warnings(cells: list[ET.Element], mode: str) -> list[str]:
     warnings: list[str] = []
     entity_cells = [
         cell
@@ -206,22 +247,30 @@ def collect_mer_notation_warnings(cells: list[ET.Element]) -> list[str]:
         if cell.get("vertex") == "1" and (cell.get("id") or "").startswith("entity_")
     ]
     attribute_ovals = [cell for cell in cells if is_attribute_oval(cell)]
+    compact_attribute_blocks = [cell for cell in cells if is_compact_attribute_block(cell)]
     relationship_diamonds = [cell for cell in cells if is_relationship_diamond(cell)]
 
     for cell in entity_cells:
         if has_internal_attribute_list(cell):
             cell_id = cell.get("id", "(no id)")
             warnings.append(
-                f"MER entity {cell_id} appears to contain internal attributes; "
-                "MER should use separate attribute ovals connected to the entity."
+                f"{mode.upper()} conceptual entity {cell_id} appears to contain internal attributes; "
+                "use separate attribute ovals connected to the entity or relationship."
             )
 
-    if not attribute_ovals:
+    if mode == "mer" and not attribute_ovals:
         warnings.append(
             "MER mode did not find attribute ovals (style containing 'ellipse')."
         )
 
-    if not relationship_diamonds:
+    for block in compact_attribute_blocks:
+        block_id = block.get("id", "(no id)")
+        if TYPE_PATTERN.search(visible_value(block)):
+            warnings.append(
+                f"Compact MER attribute block {block_id} appears to contain data types; compact conceptual lists must stay free of logical/relational detail."
+            )
+
+    if mode == "mer" and not relationship_diamonds:
         warnings.append(
             "MER mode did not find relationship diamonds (style containing 'rhombus')."
         )
@@ -294,19 +343,12 @@ def collect_relational_readiness_warnings(cells: list[ET.Element]) -> list[str]:
         if many_sides >= 2 and relationship_attributes:
             attribute_names = ", ".join(visible_value(attribute).strip() for attribute in relationship_attributes)
             warnings.append(
-                f"Relational readiness: M:N relationship {relationship_name} ({relationship_id}) has own attributes ({attribute_names}); model it as an associative entity."
+                f"Relational readiness: M:N relationship {relationship_name} ({relationship_id}) has relationship attributes ({attribute_names}). Conceptual MER allows this; for relational design, verify whether it needs an associative entity because of identity, lifecycle, or participation in other relationships."
             )
         elif many_sides >= 2 and TRANSACTIONAL_RELATIONSHIP_PATTERN.search(relationship_name):
             warnings.append(
                 f"Relational readiness: M:N relationship {relationship_name} ({relationship_id}) sounds transactional; verify whether it needs an associative entity if it has its own attributes or lifecycle."
             )
-
-        if relationship_attributes:
-            attribute_values = " ".join(visible_value(attribute) for attribute in relationship_attributes)
-            if RELATIONSHIP_ATTRIBUTE_HINT_PATTERN.search(attribute_values) and many_sides < 2:
-                warnings.append(
-                    f"Relational readiness: relationship {relationship_name} ({relationship_id}) has attributes; verify whether it should be modeled as an associative or dependent entity."
-                )
 
     return warnings
 
@@ -601,12 +643,15 @@ def validate(path: Path, mode: str, check_layout: bool = False) -> tuple[list[st
     edge_count = 0
     vertex_count = 0
     attribute_oval_count = 0
+    compact_attribute_block_count = 0
     relationship_diamond_count = 0
     for cell in cells:
         if cell.get("vertex") == "1":
             vertex_count += 1
         if is_attribute_oval(cell):
             attribute_oval_count += 1
+        if is_compact_attribute_block(cell):
+            compact_attribute_block_count += 1
         if is_relationship_diamond(cell):
             relationship_diamond_count += 1
         if cell.get("edge") == "1":
@@ -625,8 +670,9 @@ def validate(path: Path, mode: str, check_layout: bool = False) -> tuple[list[st
 
     warnings.extend(collect_cardinality_warnings(cells))
     warnings.extend(collect_type_warnings(cells, mode))
+    warnings.extend(collect_logical_marker_warnings(cells, mode))
+    warnings.extend(collect_conceptual_notation_warnings(cells, mode))
     if mode == "mer":
-        warnings.extend(collect_mer_notation_warnings(cells))
         warnings.extend(collect_relational_readiness_warnings(cells))
 
     layout_summary: dict[str, object] = {}
@@ -671,6 +717,7 @@ def validate(path: Path, mode: str, check_layout: bool = False) -> tuple[list[st
         "vertices": vertex_count,
         "edges": edge_count,
         "attribute_ovals": attribute_oval_count,
+        "compact_attribute_blocks": compact_attribute_block_count,
         "relationship_diamonds": relationship_diamond_count,
         "warnings": len(warnings),
         "errors": len(errors),
@@ -697,6 +744,7 @@ def main() -> int:
         print(f"Edges: {summary['edges']}")
         if mode == "mer":
             print(f"Attribute ovals: {summary['attribute_ovals']}")
+            print(f"Compact attribute blocks: {summary['compact_attribute_blocks']}")
             print(f"Relationship diamonds: {summary['relationship_diamonds']}")
         if args.check_layout:
             estimated_width, estimated_height = summary["estimated_canvas"]

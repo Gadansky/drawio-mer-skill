@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a basic uncompressed draw.io MERE example."""
+"""Create a basic uncompressed draw.io conceptual MERE/EER example."""
 
 from __future__ import annotations
 
@@ -9,21 +9,33 @@ from xml.etree import ElementTree as ET
 
 
 ENTITY_STYLE = (
-    "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;"
-    "spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;"
+    "rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;"
+    "fontSize=14;strokeColor=#1d4ed8;fillColor=#eff6ff;"
 )
-ASSOCIATIVE_STYLE = (
-    "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;"
-    "spacing=8;fontSize=12;strokeColor=#9673a6;fillColor=#e1d5e7;"
-    "strokeWidth=2;dashed=1;"
+SUBTYPE_STYLE = (
+    "rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;"
+    "fontSize=14;strokeColor=#7c3aed;fillColor=#f5f3ff;"
 )
+ATTRIBUTE_STYLE = (
+    "ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;"
+    "fontSize=12;strokeColor=#334155;fillColor=#ffffff;"
+)
+KEY_ATTRIBUTE_STYLE = ATTRIBUTE_STYLE + "fontStyle=4;"
 RELATIONSHIP_STYLE = (
     "rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;"
     "fontSize=12;strokeColor=#334155;fillColor=#fff7ed;"
 )
+GENERALIZATION_STYLE = (
+    "triangle;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;"
+    "fontSize=12;strokeColor=#0f766e;fillColor=#ccfbf1;direction=north;"
+)
 EDGE_STYLE = (
     "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;"
     "html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;"
+)
+ATTRIBUTE_EDGE_STYLE = (
+    "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;"
+    "html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;"
 )
 ZONE_STYLE = (
     "text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;"
@@ -31,29 +43,22 @@ ZONE_STYLE = (
 )
 
 
-def entity_value(name: str, attributes: list[str], note: str | None = None) -> str:
-    lines = [name, "----------------", *attributes]
-    if note:
-        lines.extend(["----------------", note])
-    return "<br>".join(lines)
-
-
-def add_entity(
+def add_vertex(
     root: ET.Element,
     cell_id: str,
-    name: str,
-    attributes: list[str],
+    value: str,
+    style: str,
     x: int,
     y: int,
-    style: str = ENTITY_STYLE,
-    note: str | None = None,
+    width: int,
+    height: int,
 ) -> None:
     cell = ET.SubElement(
         root,
         "mxCell",
         {
             "id": cell_id,
-            "value": entity_value(name, attributes, note),
+            "value": value,
             "style": style,
             "vertex": "1",
             "parent": "1",
@@ -62,51 +67,13 @@ def add_entity(
     ET.SubElement(
         cell,
         "mxGeometry",
-        {"x": str(x), "y": str(y), "width": "220", "height": "155", "as": "geometry"},
-    )
-
-
-def add_relationship(
-    root: ET.Element,
-    cell_id: str,
-    value: str,
-    x: int,
-    y: int,
-) -> None:
-    cell = ET.SubElement(
-        root,
-        "mxCell",
         {
-            "id": cell_id,
-            "value": value,
-            "style": RELATIONSHIP_STYLE,
-            "vertex": "1",
-            "parent": "1",
+            "x": str(x),
+            "y": str(y),
+            "width": str(width),
+            "height": str(height),
+            "as": "geometry",
         },
-    )
-    ET.SubElement(
-        cell,
-        "mxGeometry",
-        {"x": str(x), "y": str(y), "width": "120", "height": "80", "as": "geometry"},
-    )
-
-
-def add_zone_label(root: ET.Element, cell_id: str, value: str, x: int, y: int) -> None:
-    cell = ET.SubElement(
-        root,
-        "mxCell",
-        {
-            "id": cell_id,
-            "value": value,
-            "style": ZONE_STYLE,
-            "vertex": "1",
-            "parent": "1",
-        },
-    )
-    ET.SubElement(
-        cell,
-        "mxGeometry",
-        {"x": str(x), "y": str(y), "width": "260", "height": "40", "as": "geometry"},
     )
 
 
@@ -116,6 +83,7 @@ def add_edge(
     value: str,
     source: str,
     target: str,
+    style: str = EDGE_STYLE,
     points: list[tuple[float, float]] | None = None,
 ) -> None:
     cell = ET.SubElement(
@@ -124,7 +92,7 @@ def add_edge(
         {
             "id": cell_id,
             "value": value,
-            "style": EDGE_STYLE,
+            "style": style,
             "edge": "1",
             "parent": "1",
             "source": source,
@@ -173,124 +141,88 @@ def build_diagram() -> ET.ElementTree:
     ET.SubElement(root, "mxCell", {"id": "0"})
     ET.SubElement(root, "mxCell", {"id": "1", "parent": "0"})
 
-    add_zone_label(root, "zone_comercial", "Zona comercial", 80, 40)
-    add_zone_label(root, "zone_catalogo", "Zona catalogo", 1320, 40)
-    add_zone_label(root, "zone_detalle", "Zona detalle / asociativa", 500, 680)
+    add_vertex(root, "zone_personas", "Especializacion de personas", ZONE_STYLE, 80, 20, 320, 40)
 
-    add_entity(
+    add_vertex(root, "entity_persona", "Persona", ENTITY_STYLE, 520, 120, 140, 50)
+    add_vertex(root, "entity_cliente", "Cliente", SUBTYPE_STYLE, 260, 480, 140, 50)
+    add_vertex(root, "entity_empleado", "Empleado", SUBTYPE_STYLE, 860, 480, 140, 50)
+    add_vertex(root, "gen_persona_tipo", "d", GENERALIZATION_STYLE, 550, 270, 80, 70)
+    add_vertex(root, "rel_atiende", "atiende", RELATIONSHIP_STYLE, 560, 610, 120, 70)
+
+    add_vertex(root, "attr_persona_id_persona", "id_persona", KEY_ATTRIBUTE_STYLE, 330, 70, 120, 45)
+    add_vertex(root, "attr_persona_nombre", "nombre", ATTRIBUTE_STYLE, 720, 70, 120, 45)
+    add_vertex(root, "attr_cliente_id_cliente", "id_cliente", KEY_ATTRIBUTE_STYLE, 80, 440, 120, 45)
+    add_vertex(root, "attr_cliente_segmento", "segmento", ATTRIBUTE_STYLE, 80, 540, 120, 45)
+    add_vertex(root, "attr_empleado_id_empleado", "id_empleado", KEY_ATTRIBUTE_STYLE, 1060, 440, 120, 45)
+    add_vertex(root, "attr_empleado_cargo", "cargo", ATTRIBUTE_STYLE, 1060, 540, 120, 45)
+
+    add_edge(root, "edge_persona_gen", "total", "entity_persona", "gen_persona_tipo", points=[(590, 230)])
+    add_edge(root, "edge_gen_cliente", "ISA", "gen_persona_tipo", "entity_cliente", points=[(590, 390), (330, 390)])
+    add_edge(root, "edge_gen_empleado", "ISA", "gen_persona_tipo", "entity_empleado", points=[(590, 390), (930, 390)])
+
+    add_edge(root, "edge_cliente_atiende", "0..1", "entity_cliente", "rel_atiende", points=[(330, 645)])
+    add_edge(root, "edge_empleado_atiende", "0..N", "entity_empleado", "rel_atiende", points=[(930, 645)])
+
+    add_edge(
         root,
+        "edge_persona_attr_id",
+        "",
+        "attr_persona_id_persona",
+        "entity_persona",
+        ATTRIBUTE_EDGE_STYLE,
+        points=[(390, 145)],
+    )
+    add_edge(
+        root,
+        "edge_persona_attr_nombre",
+        "",
+        "attr_persona_nombre",
+        "entity_persona",
+        ATTRIBUTE_EDGE_STYLE,
+        points=[(780, 145)],
+    )
+    add_edge(
+        root,
+        "edge_cliente_attr_id",
+        "",
+        "attr_cliente_id_cliente",
         "entity_cliente",
-        "Cliente",
-        [
-            "id_cliente: int",
-            "nombre: varchar(100)",
-            "email: varchar(150)",
-            "telefono: varchar(20)",
-        ],
-        80,
-        120,
+        ATTRIBUTE_EDGE_STYLE,
+        points=[(210, 462), (260, 462)],
     )
-    add_entity(
-        root,
-        "entity_pedido",
-        "Pedido",
-        [
-            "id_pedido: int",
-            "id_cliente: int",
-            "fecha_pedido: date",
-            "total: decimal(10,2)",
-            "estado: varchar(30)",
-        ],
-        650,
-        120,
-    )
-    add_entity(
-        root,
-        "entity_producto",
-        "Producto",
-        [
-            "id_producto: int",
-            "nombre: varchar(100)",
-            "precio: decimal(10,2)",
-            "stock: int",
-        ],
-        1320,
-        120,
-    )
-    add_entity(
-        root,
-        "entity_detalle_pedido",
-        "DetallePedido",
-        [
-            "id_pedido: int",
-            "id_producto: int",
-            "cantidad: int",
-            "precio_unitario: decimal(10,2)",
-        ],
-        810,
-        760,
-        style=ASSOCIATIVE_STYLE,
-        note="Entidad asociativa/debil",
-    )
-
-    add_relationship(root, "rel_realiza", "realiza", 410, 155)
-    add_relationship(root, "rel_contiene", "contiene", 700, 470)
-    add_relationship(root, "rel_referencia", "referencia", 1190, 470)
-
     add_edge(
         root,
-        "edge_cliente_realiza",
-        "1",
+        "edge_cliente_attr_segmento",
+        "",
+        "attr_cliente_segmento",
         "entity_cliente",
-        "rel_realiza",
-        points=[(350, 197.5), (350, 195)],
+        ATTRIBUTE_EDGE_STYLE,
+        points=[(210, 562), (260, 562)],
     )
     add_edge(
         root,
-        "edge_realiza_pedido",
-        "0..N",
-        "rel_realiza",
-        "entity_pedido",
-        points=[(590, 195), (590, 197.5)],
+        "edge_empleado_attr_id",
+        "",
+        "attr_empleado_id_empleado",
+        "entity_empleado",
+        ATTRIBUTE_EDGE_STYLE,
+        points=[(1040, 462), (1000, 462)],
     )
     add_edge(
         root,
-        "edge_pedido_contiene",
-        "1",
-        "entity_pedido",
-        "rel_contiene",
-        points=[(760, 360)],
-    )
-    add_edge(
-        root,
-        "edge_contiene_detalle",
-        "1..N",
-        "rel_contiene",
-        "entity_detalle_pedido",
-        points=[(760, 620), (920, 620)],
-    )
-    add_edge(
-        root,
-        "edge_detalle_referencia",
-        "0..N",
-        "entity_detalle_pedido",
-        "rel_referencia",
-        points=[(920, 620), (1250, 620)],
-    )
-    add_edge(
-        root,
-        "edge_referencia_producto",
-        "1",
-        "rel_referencia",
-        "entity_producto",
-        points=[(1250, 350), (1430, 350)],
+        "edge_empleado_attr_cargo",
+        "",
+        "attr_empleado_cargo",
+        "entity_empleado",
+        ATTRIBUTE_EDGE_STYLE,
+        points=[(1040, 562), (1000, 562)],
     )
 
     return ET.ElementTree(mxfile)
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Create a basic MERE .drawio file.")
+    parser = argparse.ArgumentParser(description="Create a conceptual MERE .drawio file.")
     parser.add_argument("output", help="Output .drawio path.")
     return parser.parse_args()
 

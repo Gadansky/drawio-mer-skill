@@ -42,6 +42,18 @@ Example:
 </mxCell>
 ```
 
+Key attributes should be visually marked with underline style or another explicit key marker. Relationship attributes use the same oval notation and connect to the relationship diamond instead of an entity.
+
+For compact MER in large models, non-key attributes may be represented by a compact list block below the entity. These blocks must use an `attrs_` ID prefix or style flag `drawioMerCompactAttrs=1`, and must not include data types.
+
+Example:
+
+```xml
+<mxCell id="attrs_cliente" value="nombre&lt;br&gt;email&lt;br&gt;telefono" style="text;html=1;drawioMerCompactAttrs=1;" vertex="1" parent="1">
+  <mxGeometry x="100" y="220" width="260" height="90" as="geometry"/>
+</mxCell>
+```
+
 ## MER Relationships
 
 MER relationships are diamonds/rhombi with `vertex="1"` and style containing `rhombus`.
@@ -89,9 +101,9 @@ Every visible vertex must have an `mxGeometry` child with:
 - `height`
 - `as="geometry"`
 
-Visible nodes must not share overlapping bounding boxes. Attribute ovals, relationship diamonds, entity rectangles, MERE table blocks, and notes should all have explicit non-overlapping geometry unless the overlap is intentionally marked with `ignoreLayoutOverlap=1` in the cell style.
+Visible nodes must not share overlapping bounding boxes. Attribute ovals, relationship diamonds, entity rectangles, MERE extended elements, and notes should all have explicit non-overlapping geometry unless the overlap is intentionally marked with `ignoreLayoutOverlap=1` in the cell style.
 
-Labels and cardinalities should be placed outside entity rectangles, attribute ovals, relationship diamonds, and MERE blocks.
+Labels and cardinalities should be placed outside entity rectangles, attribute ovals, relationship diamonds, and MERE extended elements.
 
 Edge routes should use planned horizontal and vertical lanes in the grid. Do not route connector segments through the bounding boxes of visible nodes. Connect from the nearest practical side of the node and reserve free lanes between functional zones. If a crossing is intentionally unavoidable, mark the edge style with `ignoreRouteCrossing=1`.
 
@@ -100,9 +112,11 @@ Recommended sizes:
 - MER entity rectangle: `140 x 50`.
 - MER attribute oval: `120 x 45`.
 - MER relationship diamond: `120 x 70`.
-- MERE entity/table block: `180-260 px` wide, variable height based on attributes.
+- Compact MER non-key attribute block: `220-320 px` wide, variable height.
+- MERE subtype/supertype rectangle: `140 x 50`.
+- MERE specialization/generalization node: `70-90 px` wide.
 
-For medium diagrams, use at least `2400 x 1600 px` canvas. This is a minimum baseline, not a maximum. For large relational databases, expand the canonical canvas first. Create module pages only when the user explicitly requests support views.
+For medium diagrams, use at least `2400 x 1600 px` canvas. This is a minimum baseline, not a maximum. For large conceptual models, expand the canonical canvas first. Create module pages only when the user explicitly requests support views.
 
 When validating a `.drawio` file with multiple `<diagram>` pages, layout metrics must be computed per page. Never compare bounding boxes from different pages as if they shared one canvas.
 
@@ -119,9 +133,10 @@ Check:
 - Cardinalities are standard.
 - In MER, entity cells do not contain internal attribute lists.
 - In MER, attribute ovals exist.
+- In compact MER, compact non-key attribute blocks may exist outside entity rectangles.
 - In MER, relationship diamonds exist.
 - In MER, data types are absent.
-- In MERE, data types and internal attributes are allowed.
+- In MER and MERE, data types, `PK`, `FK`, SQL, field sizes, and internal table-like attributes are absent unless the file is explicitly a separate logical/relational model.
 - With layout validation enabled, every visible vertex has geometry.
 - With layout validation enabled, visual nodes do not overlap.
 - With layout validation enabled, edge route segments do not cross visible node bounding boxes.

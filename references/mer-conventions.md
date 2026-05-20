@@ -11,15 +11,36 @@
 
 - Entity: rectangle, name only.
 - Attribute: oval/bubble connected to the owning entity.
+- Key attribute: oval/bubble with underline style or another explicit key marker.
 - Relationship: diamond/rhombus connected to participating entities.
+- Relationship attribute: oval/bubble connected to the relationship diamond.
 - Cardinality: connector label between an entity and a relationship diamond.
+- Weak entity: double rectangle or an explicit weak-entity style.
+- Identifying relationship: double diamond or an explicit identifying-relationship style.
+- Partial key: key-style attribute marked as partial.
+- Composite attribute: parent attribute oval connected to component ovals.
+- Multivalued attribute: double oval or explicit multivalued style.
+- Derived attribute: dashed oval or explicit derived style.
+- Ternary relationship: one diamond connected to three entities.
+
+## Compact MER Shape Rules
+
+Use compact MER only when full Chen-style attributes would make the model unreadable.
+
+- Entity: rectangle, name only.
+- Identifier: oval/bubble connected to the owning entity.
+- Non-key attributes: compact list block below the entity, marked with `attrs_` ID prefix or `drawioMerCompactAttrs=1`.
+- Relationship: diamond/rhombus placed between participating entities.
+- Cardinality: connector label between an entity and a relationship diamond.
+- Data types: not allowed.
 
 ## MERE Shape Rules
 
-- Entity: table/block style may contain internal attributes.
-- Attribute data types are allowed.
-- Relationship diamonds are preferred for clarity.
-- Weak/associative entities must be visually distinguished.
+- Use MER shape rules as the base conceptual notation.
+- Specialization/generalization: connect supertype and subtypes through a clear ISA/generalization node.
+- Mark disjoint/overlap and total/partial constraints when known.
+- Categories/unions must be visually distinguished.
+- Data types, `PK`, `FK`, SQL, field sizes, and internal table-like attributes are not allowed in conceptual MERE.
 
 ## Entity Names
 
@@ -40,8 +61,8 @@ Examples:
 - Use `snake_case` or `camelCase`.
 - Keep naming consistent.
 - In MER, draw each attribute as an oval.
-- In MER, do not include data types.
-- In MERE, internal attributes and data types are allowed.
+- In MERE, draw each conceptual attribute as an oval.
+- In MER and MERE, do not include data types, `PK`, `FK`, SQL syntax, or field sizes.
 
 Correct MER examples:
 
@@ -53,14 +74,16 @@ Correct MER examples:
 
 Correct MERE examples:
 
-- id_cliente: int
-- nombre: varchar(100)
-- fecha_pedido: date
-- total: decimal(10,2)
+- id_persona
+- nombre
+- segmento
+- cargo
 
-Incorrect for conceptual MER:
+Incorrect for conceptual MER/MERE:
 
 - id_cliente INT
+- PK id_cliente
+- FK id_cliente
 - nombre VARCHAR(100)
 - fecha_pedido DATE
 - total DECIMAL(10,2)
@@ -88,14 +111,17 @@ Must include:
 - Relationship diamonds.
 - Cardinalities.
 
-Must not include internal entity attributes or data types.
+For compact MER, only identifiers need attribute ovals; non-key attributes may use compact list blocks below entities.
+
+Must not include internal entity attributes or data types. Compact list blocks are allowed only when they are outside the entity rectangle and marked as compact attributes.
 
 For relational-design readiness, also check:
 
 - Every entity has an identifier candidate, usually an attribute like `id_entidad`, `codigo`, `numero`, or a clearly named natural key.
 - Every relationship has cardinality and optionality on both participating entity sides.
 - Direct M:N relationships are allowed in conceptual MER.
-- M:N relationships with own attributes, lifecycle, or transactional meaning should be modeled as an associative entity.
+- Relationship attributes are allowed in conceptual MER.
+- M:N relationships with relationship attributes should be reviewed for relational design, but only become associative entities when they have their own identity, lifecycle, participation in other relationships, or explicit relational-design intent.
 - Weak or dependent entities should be visually distinguished and tied to their identifying relationship.
 
 ## MERE
@@ -103,10 +129,9 @@ For relational-design readiness, also check:
 May include:
 
 - Entities.
-- Internal attributes.
+- Attribute ovals.
 - Relationships.
 - Cardinalities.
-- Data types.
 - Weak entities.
 - Associative entities.
 - Composite attributes.
@@ -116,3 +141,5 @@ May include:
 - Inheritance.
 - Ternary or higher-degree relationships.
 - Additional constraints.
+
+Must not include data types, `PK`, `FK`, SQL syntax, field sizes, or internal table-like attributes unless the user asks for a separate logical/relational model.

@@ -9,9 +9,10 @@ A MER can be conceptually valid while still being incomplete for relational desi
 ## Required Checks
 
 - Entities: each entity should have a clear identifier candidate.
-- Attributes: each attribute should belong to one entity or, when it describes a relationship, the relationship should become an associative entity.
+- Attributes: each attribute should belong to one entity or to the relationship it describes.
 - Relationships: each relationship should have a name, participating entities, cardinality, and optionality on each side.
-- M:N relationships: direct diamonds are valid in conceptual MER, but use an associative entity when the relationship has attributes, lifecycle, state, date, amount, quantity, role, grade, status, or another fact of its own.
+- Relationship attributes: valid in conceptual MER; review them for relational design impact instead of automatically replacing the relationship.
+- M:N relationships: direct diamonds are valid in conceptual MER. Use an associative entity only when the relationship has its own identity, meaningful lifecycle, must participate in other relationships, or the user explicitly asks for relational-design preparation.
 - Weak/dependent entities: mark them visually and show the identifying relationship.
 - Multivalued attributes: flag them because they often become separate relations later.
 - Composite attributes: clarify whether they remain conceptual or will be decomposed later.
@@ -32,7 +33,8 @@ When the domain is incomplete, report:
 Use this distinction:
 
 - Conceptual MER: `Estudiante 0..N -- inscribe -- 0..N Asignatura` is allowed.
-- MER ready for relational design: if `inscribe` has `fecha_inscripcion`, `estado`, `nota`, `monto`, `cantidad`, or similar attributes, replace it with an associative entity such as `Inscripcion`.
+- Conceptual MER with relationship attribute: `inscribe -- fecha_inscripcion` is also allowed.
+- MER ready for relational design: if `inscribe` has identity, lifecycle/state, participates in other relationships, or the user asks for relational preparation, review whether it should become an associative entity such as `Inscripcion`.
 - Logical relational model: every M:N becomes an intermediate table, but that is a separate model unless the user asks for it.
 
 ## Do Not Invent Silently

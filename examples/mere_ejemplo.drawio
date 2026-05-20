@@ -5,80 +5,122 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="zone_comercial" value="Zona comercial" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#334155;" vertex="1" parent="1">
-          <mxGeometry x="80" y="40" width="260" height="40" as="geometry" />
+        <mxCell id="zone_personas" value="Especializacion de personas" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="80" y="20" width="320" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="zone_catalogo" value="Zona catalogo" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#334155;" vertex="1" parent="1">
-          <mxGeometry x="1320" y="40" width="260" height="40" as="geometry" />
+        <mxCell id="entity_persona" value="Persona" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=14;strokeColor=#1d4ed8;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="520" y="120" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="zone_detalle" value="Zona detalle / asociativa" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#334155;" vertex="1" parent="1">
-          <mxGeometry x="500" y="680" width="260" height="40" as="geometry" />
+        <mxCell id="entity_cliente" value="Cliente" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=14;strokeColor=#7c3aed;fillColor=#f5f3ff;" vertex="1" parent="1">
+          <mxGeometry x="260" y="480" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="entity_cliente" value="Cliente&lt;br&gt;----------------&lt;br&gt;id_cliente: int&lt;br&gt;nombre: varchar(100)&lt;br&gt;email: varchar(150)&lt;br&gt;telefono: varchar(20)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
-          <mxGeometry x="80" y="120" width="220" height="155" as="geometry" />
+        <mxCell id="entity_empleado" value="Empleado" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=14;strokeColor=#7c3aed;fillColor=#f5f3ff;" vertex="1" parent="1">
+          <mxGeometry x="860" y="480" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="entity_pedido" value="Pedido&lt;br&gt;----------------&lt;br&gt;id_pedido: int&lt;br&gt;id_cliente: int&lt;br&gt;fecha_pedido: date&lt;br&gt;total: decimal(10,2)&lt;br&gt;estado: varchar(30)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
-          <mxGeometry x="650" y="120" width="220" height="155" as="geometry" />
+        <mxCell id="gen_persona_tipo" value="d" style="triangle;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#0f766e;fillColor=#ccfbf1;direction=north;" vertex="1" parent="1">
+          <mxGeometry x="550" y="270" width="80" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="entity_producto" value="Producto&lt;br&gt;----------------&lt;br&gt;id_producto: int&lt;br&gt;nombre: varchar(100)&lt;br&gt;precio: decimal(10,2)&lt;br&gt;stock: int" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
-          <mxGeometry x="1320" y="120" width="220" height="155" as="geometry" />
+        <mxCell id="rel_atiende" value="atiende" style="rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#fff7ed;" vertex="1" parent="1">
+          <mxGeometry x="560" y="610" width="120" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="entity_detalle_pedido" value="DetallePedido&lt;br&gt;----------------&lt;br&gt;id_pedido: int&lt;br&gt;id_producto: int&lt;br&gt;cantidad: int&lt;br&gt;precio_unitario: decimal(10,2)&lt;br&gt;----------------&lt;br&gt;Entidad asociativa/debil" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fontSize=12;strokeColor=#9673a6;fillColor=#e1d5e7;strokeWidth=2;dashed=1;" vertex="1" parent="1">
-          <mxGeometry x="810" y="760" width="220" height="155" as="geometry" />
+        <mxCell id="attr_persona_id_persona" value="id_persona" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;fontStyle=4;" vertex="1" parent="1">
+          <mxGeometry x="330" y="70" width="120" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="rel_realiza" value="realiza" style="rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#fff7ed;" vertex="1" parent="1">
-          <mxGeometry x="410" y="155" width="120" height="80" as="geometry" />
+        <mxCell id="attr_persona_nombre" value="nombre" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="720" y="70" width="120" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="rel_contiene" value="contiene" style="rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#fff7ed;" vertex="1" parent="1">
-          <mxGeometry x="700" y="470" width="120" height="80" as="geometry" />
+        <mxCell id="attr_cliente_id_cliente" value="id_cliente" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;fontStyle=4;" vertex="1" parent="1">
+          <mxGeometry x="80" y="440" width="120" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="rel_referencia" value="referencia" style="rhombus;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#fff7ed;" vertex="1" parent="1">
-          <mxGeometry x="1190" y="470" width="120" height="80" as="geometry" />
+        <mxCell id="attr_cliente_segmento" value="segmento" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="80" y="540" width="120" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="edge_cliente_realiza" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_cliente" target="rel_realiza">
+        <mxCell id="attr_empleado_id_empleado" value="id_empleado" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;fontStyle=4;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="440" width="120" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="attr_empleado_cargo" value="cargo" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#334155;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="540" width="120" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_persona_gen" value="total" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_persona" target="gen_persona_tipo">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="350" y="197.5" />
-              <mxPoint x="350" y="195" />
+              <mxPoint x="590" y="230" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="edge_realiza_pedido" value="0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_realiza" target="entity_pedido">
+        <mxCell id="edge_gen_cliente" value="ISA" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="gen_persona_tipo" target="entity_cliente">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="590" y="195" />
-              <mxPoint x="590" y="197.5" />
+              <mxPoint x="590" y="390" />
+              <mxPoint x="330" y="390" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="edge_pedido_contiene" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_pedido" target="rel_contiene">
+        <mxCell id="edge_gen_empleado" value="ISA" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="gen_persona_tipo" target="entity_empleado">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="760" y="360" />
+              <mxPoint x="590" y="390" />
+              <mxPoint x="930" y="390" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="edge_contiene_detalle" value="1..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_contiene" target="entity_detalle_pedido">
+        <mxCell id="edge_cliente_atiende" value="0..1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_cliente" target="rel_atiende">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="760" y="620" />
-              <mxPoint x="920" y="620" />
+              <mxPoint x="330" y="645" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="edge_detalle_referencia" value="0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_detalle_pedido" target="rel_referencia">
+        <mxCell id="edge_empleado_atiende" value="0..N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="entity_empleado" target="rel_atiende">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="920" y="620" />
-              <mxPoint x="1250" y="620" />
+              <mxPoint x="930" y="645" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="edge_referencia_producto" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#64748b;fontSize=11;" edge="1" parent="1" source="rel_referencia" target="entity_producto">
+        <mxCell id="edge_persona_attr_id" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_persona_id_persona" target="entity_persona">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1250" y="350" />
-              <mxPoint x="1430" y="350" />
+              <mxPoint x="390" y="145" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_persona_attr_nombre" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_persona_nombre" target="entity_persona">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="145" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_cliente_attr_id" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_cliente_id_cliente" target="entity_cliente">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="210" y="462" />
+              <mxPoint x="260" y="462" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_cliente_attr_segmento" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_cliente_segmento" target="entity_cliente">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="210" y="562" />
+              <mxPoint x="260" y="562" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_empleado_attr_id" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_empleado_id_empleado" target="entity_empleado">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="462" />
+              <mxPoint x="1000" y="462" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_empleado_attr_cargo" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;strokeColor=#94a3b8;" edge="1" parent="1" source="attr_empleado_cargo" target="entity_empleado">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="562" />
+              <mxPoint x="1000" y="562" />
             </Array>
           </mxGeometry>
         </mxCell>

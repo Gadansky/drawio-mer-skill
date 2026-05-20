@@ -7,14 +7,18 @@ Codex skill for creating, editing, validating, and reviewing MER/MERE diagrams i
 - Creates and edits `.drawio`, `.drawio.xml`, and diagrams.net XML files.
 - Uses uncompressed, versionable XML.
 - Supports MER course notation using classic Chen-style shapes.
-- Supports MERE / EER notation using extended blocks, internal attributes, and data types when appropriate.
-- Warns about MER completeness issues before relational design, such as missing identifiers, missing cardinalities, and M:N relationships with own attributes.
+- Supports compact MER for large models: identifier ovals plus compact non-key attribute lists.
+- Supports conceptual MERE / EER notation with specialization/generalization, supertypes/subtypes, inheritance, and categories/unions.
+- Keeps logical/relational outputs separate from conceptual MER/MERE: tables, data types, PK/FK, SQL, and field sizes are not part of MER/MERE.
+- Warns about MER completeness issues before relational design, such as missing identifiers, missing cardinalities, and M:N relationships that may need associative entities.
 - Provides Python scripts to generate and validate sample diagrams.
 
 ## MER vs MERE
 
 - `MER` = entity rectangles + attribute ovals + relationship diamonds + cardinalities, without data types.
-- `MERE` = MER concepts + extended elements + data types allowed.
+- `Compact MER` = entity rectangles + identifier ovals + compact non-key attribute lists + relationship diamonds + cardinalities, without data types.
+- `MERE` = MER concepts + extended conceptual elements such as specialization/generalization, supertypes/subtypes, inheritance, and categories/unions, without data types.
+- `Logical/relational model` = separate output for tables, columns, data types, PK/FK, SQL, and field sizes.
 
 Correct MER structure:
 
@@ -37,15 +41,14 @@ email
 telefono
 ```
 
-Correct MERE entity:
+Correct MERE specialization:
 
 ```text
-Cliente
-----------------
-id_cliente: int
-nombre: varchar(100)
-email: varchar(150)
-telefono: varchar(20)
+[Persona] -- ISA -- [Cliente]
+[Persona] -- ISA -- [Empleado]
+[Persona] -- (id_persona)
+[Cliente] -- (segmento)
+[Empleado] -- (cargo)
 ```
 
 ## Install
@@ -66,7 +69,7 @@ Generate readable diagrams by planning zones first. For medium diagrams, use at 
 
 By default, generate one canonical MER page as the final source of truth. Use module pages only when explicitly requested as support views.
 
-For connector readability, reserve horizontal and vertical lanes in the grid. Prefer explicit draw.io waypoints (`mxPoint` inside `<Array as="points">`) so relationship and attribute connectors do not pass through entities, attributes, relationship diamonds, MERE blocks, or labels.
+For connector readability, reserve horizontal and vertical lanes in the grid. Prefer explicit draw.io waypoints (`mxPoint` inside `<Array as="points">`) so relationship and attribute connectors do not pass through entities, attributes, relationship diamonds, MERE extended elements, or labels.
 
 Generate a basic Chen-style MER example:
 
@@ -105,12 +108,13 @@ Run relational-readiness validation:
 
 ```powershell
 python scripts/validate_drawio_mer.py examples/mer_ejemplo.drawio --mode mer
+python scripts/validate_drawio_mer.py examples/relationship_attribute_valid.drawio --mode mer
 python scripts/validate_drawio_mer.py examples/readiness_many_to_many_with_attribute.drawio --mode mer
 python scripts/validate_drawio_mer.py examples/readiness_missing_identifier.drawio --mode mer
 python scripts/validate_drawio_mer.py examples/readiness_missing_cardinality.drawio --mode mer
 ```
 
-Readiness warnings are not critical XML errors. They identify concepts to close before using the MER as input for relational database design.
+Readiness warnings are not critical XML errors. They identify concepts to close before using the MER as input for relational database design. Relationship attributes are valid in conceptual MER; warnings should only prompt review for logical/relational impact.
 
 Test the negative overlap fixture:
 
@@ -122,6 +126,13 @@ Test the negative route-crossing fixture:
 
 ```powershell
 python scripts/validate_drawio_mer.py examples/route_crossing_invalid.drawio --mode mer --check-layout
+```
+
+Test conceptual-boundary fixtures:
+
+```powershell
+python scripts/validate_drawio_mer.py examples/invalid_mer_data_types.drawio --mode mer
+python scripts/validate_drawio_mer.py examples/invalid_mere_fk.drawio --mode mere
 ```
 
 The skill scripts use only Python standard library modules.
