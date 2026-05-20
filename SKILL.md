@@ -17,6 +17,7 @@ Definitive rule:
 
 - MER = classic Chen-style notation: entity rectangles + attribute ovals + relationship diamonds + cardinalities, without data types.
 - MERE = extended model: entity/table blocks with internal attributes are allowed, extended elements are allowed, and data types are allowed.
+- The default deliverable for a MER is one canonical final page. Extra module pages are optional support material only when the user explicitly asks for them.
 
 ## Trigger Cases
 
@@ -125,6 +126,7 @@ telefono: varchar(20)
 - A conceptual MER may show a direct M:N relationship with a diamond.
 - A MER ready for relational design must convert an M:N relationship into an associative entity when the relationship has its own attributes, meaningful lifecycle, or transactional identity.
 - The logical/relational model is separate from the MER; mention likely tables, PKs, and FKs only as warnings or notes unless the user asks for that model.
+- Do not split a MER into multiple pages by default. If a single canonical page would be unreadable, warn that the scope must be reduced, grouped, or explicitly approved for support pages.
 
 ## Pre-Diagram Completeness Check
 
@@ -197,8 +199,9 @@ Required layout process:
 1. Plan a node table before writing XML with `id`, `type`, `x`, `y`, `width`, `height`, and `zone`.
 2. Use a grid and functional zones/modules instead of improvised coordinates.
 3. Increase `pageWidth`, `pageHeight`, `dx`, and `dy` when the node count grows.
-4. Split large databases into multiple pages when one page becomes illegible.
-5. Prefer pages such as overview, sales, users/permissions, production, audit/tracing, and notifications when the domain is large.
+4. Keep the final MER as one canonical source-of-truth page by default.
+5. Create module/support pages only after the user explicitly asks for them.
+6. If the model is too large for a readable single page, report the problem before generating a fragmented diagram.
 
 Minimum spacing:
 
@@ -220,6 +223,8 @@ Edge routing rules:
 - Route attribute connectors through short lanes above, below, or beside the owning entity.
 - Route entity-relationship-entity paths through clean orthogonal segments.
 - Do not allow edge segments to pass through the bounding boxes of entities, attributes, relationship diamonds, MERE blocks, or labels.
+- Line-line crossings are acceptable only when the diagram remains readable.
+- Line-node crossings are not acceptable in final output.
 - If a crossing is intentionally unavoidable, mark only that edge with `ignoreRouteCrossing=1` in its style and explain why.
 
 Recommended visual sizes:
@@ -307,8 +312,9 @@ To create a MER:
 11. Create attribute ovals and connect them to entities.
 12. Create relationship diamonds and connect them to entities.
 13. Add cardinality labels on entity-to-relationship connectors.
-14. Expand canvas or split pages if needed.
-15. Validate in MER mode, and use `--check-layout` for visual overlap and edge route checks.
+14. Expand the single canonical canvas as needed.
+15. Ask for scope reduction or explicit module-page approval if the single page becomes illegible.
+16. Validate in MER mode, and use `--check-layout` for visual overlap and edge route checks.
 
 To create a MERE:
 
@@ -359,7 +365,8 @@ Before returning a `.drawio` file, check:
 - Visual vertices have `mxGeometry` with `x`, `y`, `width`, and `height`.
 - Visible nodes do not overlap unless explicitly justified with `ignoreLayoutOverlap=1` in style.
 - Edge routes do not cross visible node bounding boxes unless explicitly justified with `ignoreRouteCrossing=1` in the edge style.
-- The canvas is large enough for the number of nodes, or the model is split into pages.
+- The canonical page canvas is large enough for the number of nodes.
+- Multiple pages are present only when explicitly requested as support views.
 
 ## Included Scripts
 

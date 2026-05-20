@@ -102,7 +102,9 @@ Recommended sizes:
 - MER relationship diamond: `120 x 70`.
 - MERE entity/table block: `180-260 px` wide, variable height based on attributes.
 
-For medium diagrams, use at least `2400 x 1600 px` canvas. This is a minimum baseline, not a maximum. For large relational databases, expand the canvas or split the diagram into multiple pages by module.
+For medium diagrams, use at least `2400 x 1600 px` canvas. This is a minimum baseline, not a maximum. For large relational databases, expand the canonical canvas first. Create module pages only when the user explicitly requests support views.
+
+When validating a `.drawio` file with multiple `<diagram>` pages, layout metrics must be computed per page. Never compare bounding boxes from different pages as if they shared one canvas.
 
 ## Validation
 
@@ -123,4 +125,5 @@ Check:
 - With layout validation enabled, every visible vertex has geometry.
 - With layout validation enabled, visual nodes do not overlap.
 - With layout validation enabled, edge route segments do not cross visible node bounding boxes.
+- With layout validation enabled, page-level summaries are reported separately.
 - With layout validation enabled, estimated canvas size is reported.

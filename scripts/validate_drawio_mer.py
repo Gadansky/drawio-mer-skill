@@ -16,7 +16,7 @@ from xml.etree import ElementTree as ET
 ALLOWED_CARDINALITIES = {"1", "0..1", "1..N", "0..N"}
 MANY_CARDINALITIES = {"1..N", "0..N"}
 IDENTIFIER_PATTERN = re.compile(
-    r"(?i)(?:^id[_-]|[_-]id$|^codigo$|^c[oó]digo$|^numero$|^n[uú]mero$|^rut$|^email$)"
+    r"(?i)(?:^id[_-]|[_-]id$|(?:^|[_-])codigo(?:[_-]|$)|(?:^|[_-])c[oó]digo(?:[_-]|$)|(?:^|[_-])numero(?:[_-]|$)|(?:^|[_-])n[uú]mero(?:[_-]|$)|^rut$|^email$)"
 )
 RELATIONSHIP_ATTRIBUTE_HINT_PATTERN = re.compile(
     r"(?i)(fecha|estado|nota|monto|precio|cantidad|total|rol|vigencia|hora|periodo|descuento|comision|observacion)"
@@ -119,6 +119,10 @@ def find_mxcells(root: ET.Element) -> list[ET.Element]:
 
 def find_graph_models(root: ET.Element) -> list[ET.Element]:
     return [element for element in root.iter() if local_name(element.tag) == "mxGraphModel"]
+
+
+def find_diagrams(root: ET.Element) -> list[ET.Element]:
+    return [element for element in root.iter() if local_name(element.tag) == "diagram"]
 
 
 def find_geometry(cell: ET.Element) -> ET.Element | None:
@@ -578,6 +582,7 @@ def validate(path: Path, mode: str, check_layout: bool = False) -> tuple[list[st
     root = tree.getroot()
     cells = find_mxcells(root)
     graph_models = find_graph_models(root)
+    diagrams = find_diagrams(root)
     ids = [cell.get("id") for cell in cells if cell.get("id")]
     id_set = set(ids)
     duplicate_ids = sorted(cell_id for cell_id, count in Counter(ids).items() if count > 1)
@@ -626,8 +631,40 @@ def validate(path: Path, mode: str, check_layout: bool = False) -> tuple[list[st
 
     layout_summary: dict[str, object] = {}
     if check_layout:
-        layout_warnings, layout_summary = collect_layout_warnings(cells, graph_models)
-        warnings.extend(layout_warnings)
+        page_summaries: list[dict[str, object]] = []
+        if diagrams:
+            for index, diagram in enumerate(diagrams, start=1):
+                page_name = diagram.get("name") or f"Page {index}"
+                page_cells = find_mxcells(diagram)
+                page_graph_models = find_graph_models(diagram)
+                layout_warnings, page_summary = collect_layout_warnings(page_cells, page_graph_models)
+                warnings.extend(f"[{page_name}] {warning}" for warning in layout_warnings)
+                page_summary = {"name": page_name, **page_summary}
+                page_summaries.append(page_summary)
+        else:
+            layout_warnings, page_summary = collect_layout_warnings(cells, graph_models)
+            warnings.extend(layout_warnings)
+            page_summaries.append({"name": "root", **page_summary})
+
+        layout_summary = {
+            "pages": page_summaries,
+            "nodes_with_geometry": sum(int(page["nodes_with_geometry"]) for page in page_summaries),
+            "nodes_without_geometry": sum(int(page["nodes_without_geometry"]) for page in page_summaries),
+            "overlaps": sum(int(page["overlaps"]) for page in page_summaries),
+            "edge_route_crossings": sum(int(page["edge_route_crossings"]) for page in page_summaries),
+            "estimated_canvas": (
+                max((int(page["estimated_canvas"][0]) for page in page_summaries), default=0),
+                max((int(page["estimated_canvas"][1]) for page in page_summaries), default=0),
+            ),
+            "page_canvas": (
+                max((int(page["page_canvas"][0]) for page in page_summaries), default=0),
+                max((int(page["page_canvas"][1]) for page in page_summaries), default=0),
+            ),
+            "viewport": (
+                max((int(page["viewport"][0]) for page in page_summaries), default=0),
+                max((int(page["viewport"][1]) for page in page_summaries), default=0),
+            ),
+        }
 
     summary = {
         "mx_cells": len(cells),
@@ -672,6 +709,17 @@ def main() -> int:
             print(f"Estimated canvas: {estimated_width} x {estimated_height}")
             print(f"Page canvas: {page_width} x {page_height}")
             print(f"Viewport: {viewport_width} x {viewport_height}")
+            for page in summary.get("pages", []):
+                page_estimated_width, page_estimated_height = page["estimated_canvas"]
+                page_canvas_width, page_canvas_height = page["page_canvas"]
+                print(
+                    "Page "
+                    f"{page['name']}: nodes={page['nodes_with_geometry']}, "
+                    f"overlaps={page['overlaps']}, "
+                    f"edge route crossings={page['edge_route_crossings']}, "
+                    f"estimated canvas={page_estimated_width} x {page_estimated_height}, "
+                    f"page canvas={page_canvas_width} x {page_canvas_height}"
+                )
 
     if warnings:
         print("\nWarnings:")
