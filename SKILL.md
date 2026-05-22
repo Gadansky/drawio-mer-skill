@@ -248,9 +248,12 @@ Edge routing rules:
 - Reserve space between functional zones for connector lanes.
 - Connect from the nearest logical side of each node; do not rely on center-to-center lines when that would cross other shapes.
 - Use explicit intermediate `mxPoint` waypoints inside `<Array as="points">` for routed connectors.
+- For medium/large diagrams, every entity-relationship connector must have explicit waypoints. `ignoreRouteCrossing=1` suppresses only intentional crossing checks and still requires a written justification.
+- Any long connector must have explicit waypoints. Only short attribute-to-owner connectors may omit waypoints.
 - Route attribute connectors through short lanes above, below, or beside the owning entity.
 - Route entity-relationship-entity paths through clean orthogonal segments.
 - Do not allow edge segments to pass through the bounding boxes of entities, attributes, relationship diamonds, MERE extended elements, or labels.
+- Do not stack multiple edge segments on the same lane; leave visible separation or add waypoints to use separate lanes.
 - Line-line crossings are acceptable only when the diagram remains readable.
 - Line-node crossings are not acceptable in final output.
 - If a crossing is intentionally unavoidable, mark only that edge with `ignoreRouteCrossing=1` in its style and explain why.
@@ -411,6 +414,8 @@ Before returning a `.drawio` file, check:
 - Visual vertices have `mxGeometry` with `x`, `y`, `width`, and `height`.
 - Visible nodes do not overlap unless explicitly justified with `ignoreLayoutOverlap=1` in style.
 - Edge routes do not cross visible node bounding boxes unless explicitly justified with `ignoreRouteCrossing=1` in the edge style.
+- Medium/large diagrams have explicit waypoints for entity-relationship edges and any long non-attribute connector.
+- Edge segments do not overlap, share crowded lanes, or visually stack on top of one another.
 - The canonical page canvas is large enough for the number of nodes.
 - Multiple pages are present only when explicitly requested as support views.
 

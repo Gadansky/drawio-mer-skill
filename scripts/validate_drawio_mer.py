@@ -15,6 +15,13 @@ from xml.etree import ElementTree as ET
 
 ALLOWED_CARDINALITIES = {"1", "0..1", "1..N", "0..N"}
 MANY_CARDINALITIES = {"1..N", "0..N"}
+LARGE_DIAGRAM_EDGE_THRESHOLD = 20
+LARGE_DIAGRAM_VERTEX_THRESHOLD = 25
+LARGE_DIAGRAM_ZONE_THRESHOLD = 2
+SHORT_ATTRIBUTE_CONNECTOR_MAX_LENGTH = 240.0
+LONG_EDGE_WITHOUT_WAYPOINT_THRESHOLD = 300.0
+EDGE_LANE_TOLERANCE = 8.0
+EDGE_MIN_OVERLAP_LENGTH = 30.0
 IDENTIFIER_PATTERN = re.compile(
     r"(?i)(?:^id[_-]|[_-]id$|(?:^|[_-])codigo(?:[_-]|$)|(?:^|[_-])numero(?:[_-]|$)|(?:^|[_-])rut(?:[_-]|$)|^email$)"
 )
@@ -94,6 +101,15 @@ class BoundingBox:
         return (self.x + self.width / 2, self.y + self.height / 2)
 
 
+@dataclass(frozen=True)
+class EdgeSegment:
+    edge_id: str
+    source_id: str
+    target_id: str
+    start: tuple[float, float]
+    end: tuple[float, float]
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Validate a draw.io MER/MERE XML file.",
@@ -107,7 +123,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--check-layout",
         action="store_true",
-        help="Check vertex geometry, estimated canvas, and visual overlaps.",
+        help="Check vertex geometry, canvas size, node overlaps, edge routes, and edge overlaps.",
     )
     return parser.parse_args()
 
@@ -182,6 +198,11 @@ def is_attribute_oval(cell: ET.Element) -> bool:
 def is_relationship_diamond(cell: ET.Element) -> bool:
     style = cell_style(cell)
     return cell.get("vertex") == "1" and ("rhombus" in style or "shape=rhombus" in style)
+
+
+def is_zone_container(cell: ET.Element) -> bool:
+    style = cell_style(cell)
+    return cell.get("vertex") == "1" and ("swimlane" in style or "container=1" in style)
 
 
 def is_compact_attribute_block(cell: ET.Element) -> bool:
@@ -369,6 +390,17 @@ def edge_connects_relationship_to_entity(
     return other is not None and (other.get("id") or "").startswith("entity_")
 
 
+def is_large_diagram(cells: list[ET.Element]) -> bool:
+    vertex_count = sum(1 for cell in cells if cell.get("vertex") == "1")
+    edge_count = sum(1 for cell in cells if cell.get("edge") == "1")
+    zone_count = sum(1 for cell in cells if is_zone_container(cell))
+    return (
+        edge_count >= LARGE_DIAGRAM_EDGE_THRESHOLD
+        or vertex_count >= LARGE_DIAGRAM_VERTEX_THRESHOLD
+        or zone_count >= LARGE_DIAGRAM_ZONE_THRESHOLD
+    )
+
+
 def collect_layout_warnings(
     cells: list[ET.Element],
     graph_models: list[ET.Element],
@@ -429,6 +461,16 @@ def collect_layout_warnings(
     for edge_id, crossed_id in route_crossings:
         warnings.append(f"Edge route crosses node: {edge_id} crosses {crossed_id}")
 
+    missing_waypoint_edges = collect_missing_waypoint_edges(cells, boxes_by_id, cell_by_id)
+    for edge_id in missing_waypoint_edges:
+        warnings.append(
+            f"Edge route lacks explicit waypoints: {edge_id}; add mxPoint route points. ignoreRouteCrossing=1 only suppresses intentional crossing checks and still needs separate justification."
+        )
+
+    overlapping_edge_routes = collect_overlapping_edge_routes(cells, boxes_by_id)
+    for left_edge_id, right_edge_id in overlapping_edge_routes:
+        warnings.append(f"Edge routes overlap or share a crowded lane: {left_edge_id} with {right_edge_id}")
+
     max_right = max((box.right for box in boxes), default=0.0)
     max_bottom = max((box.bottom for box in boxes), default=0.0)
     page_width = max((parse_float(model.get("pageWidth")) or 0.0 for model in graph_models), default=0.0)
@@ -441,6 +483,8 @@ def collect_layout_warnings(
         "nodes_without_geometry": len(missing_geometry),
         "overlaps": len(overlaps),
         "edge_route_crossings": len(route_crossings),
+        "edges_missing_waypoints": len(missing_waypoint_edges),
+        "edge_route_overlaps": len(overlapping_edge_routes),
         "estimated_canvas": (round(max_right), round(max_bottom)),
         "page_canvas": (round(page_width), round(page_height)),
         "viewport": (round(dx), round(dy)),
@@ -471,6 +515,113 @@ def edge_waypoints(cell: ET.Element) -> list[tuple[float, float]]:
     return points
 
 
+def collect_missing_waypoint_edges(
+    cells: list[ET.Element],
+    boxes_by_id: dict[str, BoundingBox],
+    cell_by_id: dict[str, ET.Element],
+) -> list[str]:
+    missing_waypoint_edges: list[str] = []
+    large_diagram = is_large_diagram(cells)
+
+    for edge in cells:
+        if edge.get("edge") != "1":
+            continue
+        if edge_waypoints(edge):
+            continue
+
+        edge_id = edge.get("id", "(no id)")
+        source_id = edge.get("source") or ""
+        target_id = edge.get("target") or ""
+        source_box = boxes_by_id.get(source_id)
+        target_box = boxes_by_id.get(target_id)
+        if source_box is None or target_box is None:
+            continue
+
+        if is_short_attribute_connector(edge, cell_by_id, source_box, target_box):
+            continue
+
+        if large_diagram and edge_has_relationship_and_entity(edge, cell_by_id):
+            missing_waypoint_edges.append(edge_id)
+            continue
+
+        if point_distance(source_box.center, target_box.center) > LONG_EDGE_WITHOUT_WAYPOINT_THRESHOLD:
+            missing_waypoint_edges.append(edge_id)
+
+    return missing_waypoint_edges
+
+
+def is_short_attribute_connector(
+    edge: ET.Element,
+    cell_by_id: dict[str, ET.Element],
+    source_box: BoundingBox,
+    target_box: BoundingBox,
+) -> bool:
+    source = cell_by_id.get(edge.get("source") or "")
+    target = cell_by_id.get(edge.get("target") or "")
+    if source is None or target is None:
+        return False
+
+    has_attribute_endpoint = (
+        is_attribute_oval(source)
+        or is_attribute_oval(target)
+        or is_compact_attribute_block(source)
+        or is_compact_attribute_block(target)
+    )
+    if not has_attribute_endpoint:
+        return False
+
+    return point_distance(source_box.center, target_box.center) <= SHORT_ATTRIBUTE_CONNECTOR_MAX_LENGTH
+
+
+def edge_has_relationship_and_entity(
+    edge: ET.Element,
+    cell_by_id: dict[str, ET.Element],
+) -> bool:
+    source = cell_by_id.get(edge.get("source") or "")
+    target = cell_by_id.get(edge.get("target") or "")
+    if source is None or target is None:
+        return False
+    source_id = source.get("id") or ""
+    target_id = target.get("id") or ""
+    return (
+        ((source_id.startswith("rel_") or is_relationship_diamond(source)) and target_id.startswith("entity_"))
+        or ((target_id.startswith("rel_") or is_relationship_diamond(target)) and source_id.startswith("entity_"))
+    )
+
+
+def point_distance(start: tuple[float, float], end: tuple[float, float]) -> float:
+    return ((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2) ** 0.5
+
+
+def edge_route_segments(
+    edge: ET.Element,
+    boxes_by_id: dict[str, BoundingBox],
+) -> list[EdgeSegment]:
+    source_id = edge.get("source") or ""
+    target_id = edge.get("target") or ""
+    source_box = boxes_by_id.get(source_id)
+    target_box = boxes_by_id.get(target_id)
+    if source_box is None or target_box is None:
+        return []
+
+    route_points = [source_box.center, *edge_waypoints(edge), target_box.center]
+    edge_id = edge.get("id", "(no id)")
+    segments: list[EdgeSegment] = []
+    for start, end in zip(route_points, route_points[1:]):
+        if start == end:
+            continue
+        segments.append(
+            EdgeSegment(
+                edge_id=edge_id,
+                source_id=source_id,
+                target_id=target_id,
+                start=start,
+                end=end,
+            )
+        )
+    return segments
+
+
 def collect_edge_route_crossings(
     cells: list[ET.Element],
     boxes_by_id: dict[str, BoundingBox],
@@ -492,21 +643,81 @@ def collect_edge_route_crossings(
         if source_box is None or target_box is None:
             continue
 
-        route_points = [source_box.center, *edge_waypoints(edge), target_box.center]
         ignored_ids = {source_id, target_id}
         crossed_by_edge: set[str] = set()
 
-        for start, end in zip(route_points, route_points[1:]):
-            if start == end:
-                continue
+        for segment in edge_route_segments(edge, boxes_by_id):
             for box_id, box in boxes_by_id.items():
                 if box_id in ignored_ids or box_id in crossed_by_edge:
                     continue
-                if segment_crosses_box(start, end, box):
+                if segment_crosses_box(segment.start, segment.end, box):
                     crossings.append((edge_id, box_id))
                     crossed_by_edge.add(box_id)
 
     return crossings
+
+
+def collect_overlapping_edge_routes(
+    cells: list[ET.Element],
+    boxes_by_id: dict[str, BoundingBox],
+) -> list[tuple[str, str]]:
+    route_overlaps: list[tuple[str, str]] = []
+    segments: list[EdgeSegment] = []
+    for edge in cells:
+        if edge.get("edge") != "1":
+            continue
+        segments.extend(edge_route_segments(edge, boxes_by_id))
+
+    seen_pairs: set[tuple[str, str]] = set()
+    for index, left in enumerate(segments):
+        for right in segments[index + 1 :]:
+            if left.edge_id == right.edge_id:
+                continue
+            if {left.source_id, left.target_id} & {right.source_id, right.target_id}:
+                continue
+            pair = tuple(sorted((left.edge_id, right.edge_id)))
+            if pair in seen_pairs:
+                continue
+            if segments_share_lane(left, right):
+                route_overlaps.append(pair)
+                seen_pairs.add(pair)
+
+    return route_overlaps
+
+
+def segments_share_lane(left: EdgeSegment, right: EdgeSegment) -> bool:
+    left_orientation = axis_orientation(left.start, left.end)
+    right_orientation = axis_orientation(right.start, right.end)
+    if left_orientation is None or left_orientation != right_orientation:
+        return False
+
+    if left_orientation == "horizontal":
+        left_y = (left.start[1] + left.end[1]) / 2
+        right_y = (right.start[1] + right.end[1]) / 2
+        if abs(left_y - right_y) > EDGE_LANE_TOLERANCE:
+            return False
+        return ranges_overlap_length(left.start[0], left.end[0], right.start[0], right.end[0]) >= EDGE_MIN_OVERLAP_LENGTH
+
+    left_x = (left.start[0] + left.end[0]) / 2
+    right_x = (right.start[0] + right.end[0]) / 2
+    if abs(left_x - right_x) > EDGE_LANE_TOLERANCE:
+        return False
+    return ranges_overlap_length(left.start[1], left.end[1], right.start[1], right.end[1]) >= EDGE_MIN_OVERLAP_LENGTH
+
+
+def axis_orientation(
+    start: tuple[float, float],
+    end: tuple[float, float],
+) -> str | None:
+    if abs(start[1] - end[1]) <= EDGE_LANE_TOLERANCE:
+        return "horizontal"
+    if abs(start[0] - end[0]) <= EDGE_LANE_TOLERANCE:
+        return "vertical"
+    return None
+
+
+def ranges_overlap_length(a_start: float, a_end: float, b_start: float, b_end: float) -> float:
+    return max(0.0, min(max(a_start, a_end), max(b_start, b_end)) - max(min(a_start, a_end), min(b_start, b_end)))
 
 
 def segment_crosses_box(
@@ -698,6 +909,8 @@ def validate(path: Path, mode: str, check_layout: bool = False) -> tuple[list[st
             "nodes_without_geometry": sum(int(page["nodes_without_geometry"]) for page in page_summaries),
             "overlaps": sum(int(page["overlaps"]) for page in page_summaries),
             "edge_route_crossings": sum(int(page["edge_route_crossings"]) for page in page_summaries),
+            "edges_missing_waypoints": sum(int(page["edges_missing_waypoints"]) for page in page_summaries),
+            "edge_route_overlaps": sum(int(page["edge_route_overlaps"]) for page in page_summaries),
             "estimated_canvas": (
                 max((int(page["estimated_canvas"][0]) for page in page_summaries), default=0),
                 max((int(page["estimated_canvas"][1]) for page in page_summaries), default=0),
@@ -754,6 +967,8 @@ def main() -> int:
             print(f"Nodes without geometry: {summary['nodes_without_geometry']}")
             print(f"Visual overlaps: {summary['overlaps']}")
             print(f"Edge route crossings: {summary['edge_route_crossings']}")
+            print(f"Edges missing waypoints: {summary['edges_missing_waypoints']}")
+            print(f"Edge route overlaps: {summary['edge_route_overlaps']}")
             print(f"Estimated canvas: {estimated_width} x {estimated_height}")
             print(f"Page canvas: {page_width} x {page_height}")
             print(f"Viewport: {viewport_width} x {viewport_height}")
@@ -765,6 +980,8 @@ def main() -> int:
                     f"{page['name']}: nodes={page['nodes_with_geometry']}, "
                     f"overlaps={page['overlaps']}, "
                     f"edge route crossings={page['edge_route_crossings']}, "
+                    f"edges missing waypoints={page['edges_missing_waypoints']}, "
+                    f"edge route overlaps={page['edge_route_overlaps']}, "
                     f"estimated canvas={page_estimated_width} x {page_estimated_height}, "
                     f"page canvas={page_canvas_width} x {page_canvas_height}"
                 )
